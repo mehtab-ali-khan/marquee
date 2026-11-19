@@ -34,3 +34,10 @@ export function backdropUrl(path: string | null, size: BackdropSize = "w1280") {
 export function profileUrl(path: string | null, size: ProfileSize = "w185") {
   return buildUrl(path, size);
 }
+
+export type LogoSize = "w45" | "w92" | "w154" | "w185" | "w300" | "w500" | "original";
+
+/** Logos of streaming services and studios. */
+export function logoUrl(path: string | null, size: LogoSize = "w92") {
+  return buildUrl(path, size);
+}

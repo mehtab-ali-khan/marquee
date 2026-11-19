@@ -31,9 +31,58 @@ export type MovieSummary = {
   genre_ids: number[];
 };
 
+/** An actor in a movie/show's cast. `order` 0 = top-billed. */
+export type CastMember = {
+  id: number;
+  name: string;
+  character: string;
+  profile_path: string | null;
+  order: number;
+};
+
+/** Someone behind the camera. We use it to find the director. */
+export type CrewMember = {
+  id: number;
+  name: string;
+  job: string; // "Director", "Screenplay", "Original Music Composer"...
+};
+
+/** A trailer/teaser/clip. `key` is the YouTube video id. */
+export type Video = {
+  id: string;
+  key: string;
+  name: string;
+  site: string; // "YouTube", "Vimeo"
+  type: string; // "Trailer", "Teaser", "Clip"...
+  official: boolean;
+};
+
+/** A streaming/rental service, e.g. Netflix or Apple TV. */
+export type WatchProvider = {
+  provider_id: number;
+  provider_name: string;
+  logo_path: string;
+  display_priority: number; // lower = more prominent
+};
+
+/**
+ * Where a title is available in ONE country. Each group is optional:
+ * flatrate = included in a subscription, ads = free with ads, rent, buy.
+ */
+export type WatchProviderRegion = {
+  link: string; // TMDB page listing all options for this country
+  flatrate?: WatchProvider[];
+  free?: WatchProvider[];
+  ads?: WatchProvider[];
+  rent?: WatchProvider[];
+  buy?: WatchProvider[];
+};
+
 /**
  * A movie on its detail page. TMDB sends MORE fields here, and full genre
  * objects instead of genre ids. `Omit` removes genre_ids, `&` adds the rest.
+ * `credits` and `videos` are included because we ask for them with
+ * append_to_response (see getMovie).
  */
 export type MovieDetails = Omit<MovieSummary, "genre_ids"> & {
   genres: Genre[];
@@ -41,6 +90,11 @@ export type MovieDetails = Omit<MovieSummary, "genre_ids"> & {
   tagline: string | null;
   status: string; // "Released", "In Production"...
   imdb_id: string | null;
+  credits: { cast: CastMember[]; crew: CrewMember[] };
+  videos: { results: Video[] };
+  // Keyed by country code: results.US, results.PK, results.DE...
+  "watch/providers": { results: Record<string, WatchProviderRegion> };
+  recommendations: Paginated<MovieSummary>;
 };
 
 /** A TV show as it appears in lists. Note: `name` instead of `title`. */

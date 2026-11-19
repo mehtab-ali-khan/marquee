@@ -1,6 +1,6 @@
 import "server-only";
 import { cacheLife } from "next/cache";
-import { tmdbFetch } from "./client";
+import { TmdbError, tmdbFetch } from "./client";
 import type { MovieDetails, MovieSummary, Paginated } from "./types";
 
 // One small function per TMDB endpoint.
@@ -36,9 +36,26 @@ export async function getUpcomingMovies(page = 1) {
   return tmdbFetch<Paginated<MovieSummary>>("/movie/upcoming", { page });
 }
 
-/** A movie's details barely change, so reuse them for a day. */
-export async function getMovie(id: number) {
+/**
+ * A movie's details barely change, so reuse them for a day.
+ * Returns null if TMDB has no movie with this id.
+ *
+ * Why not just let the 404 error through? Errors that leave a "use cache"
+ * function are copied, and the copy is no longer a TmdbError, so callers
+ * can't check `instanceof TmdbError`. Deciding "not found" HERE, inside the
+ * cached function, avoids that. Other errors (TMDB down) still throw.
+ */
+export async function getMovie(id: number): Promise<MovieDetails | null> {
   "use cache";
   cacheLife("days");
-  return tmdbFetch<MovieDetails>(`/movie/${id}`);
+  try {
+    // append_to_response: get details + cast/crew + trailers + streaming services
+    // + recommendations in ONE request instead of five separate calls to TMDB.
+    return await tmdbFetch<MovieDetails>(`/movie/${id}`, {
+      append_to_response: "credits,videos,watch/providers,recommendations",
+    });
+  } catch (error) {
+    if (error instanceof TmdbError && error.status === 404) return null;
+    throw error;
+  }
 }
