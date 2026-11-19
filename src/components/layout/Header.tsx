@@ -1,12 +1,12 @@
 import Link from "next/link";
-import { buttonStyles } from "@/components/ui/Button";
+import { Suspense } from "react";
 import { Container } from "@/components/ui/Container";
 import { CommandPalette } from "./CommandPalette";
 import { NavLink } from "./NavLink";
+import { UserMenu, UserMenuFallback } from "./UserMenu";
 
-// The bar at the top of every page.
-// It's a Server Component: no state, no clicks handled in JavaScript,
-// just links. So it costs zero JavaScript in the browser.
+// The bar at the top of every page. A Server Component with small client
+// "islands": the active nav links, the ⌘K palette and the account menu.
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -42,9 +42,11 @@ export function Header() {
         <div className="ml-auto flex items-center gap-2">
           {/* Client Component island: the ⌘K search palette and its button. */}
           <CommandPalette />
-          <Link href="/login" className={buttonStyles({ variant: "secondary", size: "sm" })}>
-            Sign in
-          </Link>
+          {/* Reads the session cookie, so it streams in behind Suspense.
+              Everything else in the header is part of the instant static shell. */}
+          <Suspense fallback={<UserMenuFallback />}>
+            <UserMenu />
+          </Suspense>
         </div>
       </Container>
     </header>

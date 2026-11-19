@@ -42,7 +42,12 @@ function getToken(): string {
  * It does NOT cache: caching is decided per endpoint (popular lists can be
  * cached for hours, but a user's watchlist must never be shared between users).
  */
-export async function tmdbFetch<T>(path: string, params: TmdbParams = {}): Promise<T> {
+export async function tmdbFetch<T>(
+  path: string,
+  params: TmdbParams = {},
+  // For write requests (login, logout, watchlist...): method + JSON body.
+  options: { method?: "GET" | "POST" | "DELETE"; body?: unknown } = {},
+): Promise<T> {
   const url = new URL(TMDB_BASE_URL + path);
 
   // Defaults first, so a caller can override them (e.g. language: "de-DE").
@@ -52,10 +57,13 @@ export async function tmdbFetch<T>(path: string, params: TmdbParams = {}): Promi
   }
 
   const res = await fetch(url, {
+    method: options.method ?? "GET",
     headers: {
       Authorization: `Bearer ${getToken()}`,
       Accept: "application/json",
+      ...(options.body !== undefined && { "Content-Type": "application/json" }),
     },
+    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
   });
 
   if (!res.ok) {
