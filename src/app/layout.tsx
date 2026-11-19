@@ -1,5 +1,8 @@
 import type { Metadata } from "next";
+import { ViewTransition } from "react";
 import { Fraunces, Hanken_Grotesk } from "next/font/google";
+import { Footer } from "@/components/layout/Footer";
+import { Header } from "@/components/layout/Header";
 import "./globals.css";
 
 // Display font: headings, titles, the wordmark.
@@ -32,7 +35,18 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="en" className={`${fraunces.variable} ${hanken.variable} h-full`}>
-      <body className="flex min-h-full flex-col">{children}</body>
+      <body className="flex min-h-full flex-col">
+        {/* The header lives in the layout, so it appears on every page and
+            stays mounted while you navigate (it doesn't re-render). */}
+        <Header />
+        {/* When you navigate, the page content (not the header) fades out and
+            the new page rises in. The browser does the animation; React tells
+            it when. The animation itself is defined in globals.css (.page). */}
+        <ViewTransition default="page">
+          <div className="flex flex-1 flex-col">{children}</div>
+        </ViewTransition>
+        <Footer />
+      </body>
     </html>
   );
 }

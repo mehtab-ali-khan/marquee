@@ -108,6 +108,27 @@
   }
 }
 
+/* =========================================================================
+   PAGE TRANSITIONS (used by <ViewTransition default="page"> in layout.tsx)
+   The browser takes a "screenshot" of the old page and the new page, and
+   animates between them:
+     ::view-transition-old  = the page you're leaving  → quick fade out
+     ::view-transition-new  = the page you're entering → fade in + rise 8px
+   ========================================================================= */
+::view-transition-old(.page) {
+  animation: 150ms ease-in both page-fade-out;
+}
+::view-transition-new(.page) {
+  animation: 300ms var(--ease-out-soft) 80ms both page-rise-in;
+}
+
+@keyframes page-fade-out {
+  to { opacity: 0; }
+}
+@keyframes page-rise-in {
+  from { opacity: 0; translate: 0 8px; }
+}
+
 /* Respect the OS "reduce motion" setting: keep fades, drop movement & loops. */
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -117,5 +138,12 @@
     animation-iteration-count: 1 !important;
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Page transitions are pseudo-elements, which "*" doesn't reach. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
   }
 }
