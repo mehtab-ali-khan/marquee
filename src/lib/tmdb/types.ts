@@ -110,6 +110,38 @@ export type TvSummary = {
   genre_ids: number[];
 };
 
+/** One season of a show, as listed on the show's page (no episodes yet). */
+export type SeasonSummary = {
+  id: number;
+  season_number: number; // 0 = "Specials" (extras, not a real season)
+  name: string; // "Season 1"
+  episode_count: number;
+  air_date: string | null;
+  poster_path: string | null;
+  overview: string;
+};
+
+/**
+ * A TV show on its detail page. Same idea as MovieDetails: the list fields,
+ * plus show-only fields (seasons, creators), plus everything we request
+ * with append_to_response.
+ */
+export type TvDetails = Omit<TvSummary, "genre_ids"> & {
+  genres: Genre[];
+  tagline: string | null;
+  status: string; // "Returning Series", "Ended", "Canceled"
+  last_air_date: string | null;
+  number_of_seasons: number;
+  number_of_episodes: number;
+  created_by: { id: number; name: string }[];
+  networks: { id: number; name: string; logo_path: string | null }[];
+  seasons: SeasonSummary[];
+  credits: { cast: CastMember[]; crew: CrewMember[] };
+  videos: { results: Video[] };
+  "watch/providers": { results: Record<string, WatchProviderRegion> };
+  recommendations: Paginated<TvSummary>;
+};
+
 /** A person as it appears in lists (cast rows, search results). */
 export type PersonSummary = {
   id: number;
