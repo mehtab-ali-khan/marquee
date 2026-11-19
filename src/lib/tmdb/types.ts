@@ -151,6 +151,33 @@ export type PersonSummary = {
 };
 
 /**
+ * One entry in a person's filmography: a movie OR a show, plus their role in it.
+ * Same "label" idea as MultiResult: check media_type to know which fields exist.
+ */
+export type PersonCastCredit =
+  | (MovieSummary & { media_type: "movie"; credit_id: string; character: string })
+  | (TvSummary & { media_type: "tv"; credit_id: string; character: string; episode_count: number });
+
+/** Behind-the-camera work (directing, producing, writing...). */
+export type PersonCrewCredit =
+  | (MovieSummary & { media_type: "movie"; credit_id: string; job: string })
+  | (TvSummary & { media_type: "tv"; credit_id: string; job: string });
+
+/** A person's page. combined_credits = movies AND TV in one list (append_to_response). */
+export type PersonDetails = {
+  id: number;
+  name: string;
+  biography: string;
+  birthday: string | null; // "1956-03-07"
+  deathday: string | null;
+  place_of_birth: string | null;
+  profile_path: string | null;
+  known_for_department: string; // "Acting", "Directing"...
+  imdb_id: string | null;
+  combined_credits: { cast: PersonCastCredit[]; crew: PersonCrewCredit[] };
+};
+
+/**
  * Mixed lists (trending "all", multi-search) contain movies, TV shows AND
  * people together. Each item carries a `media_type` label saying which one
  * it is. Checking that label tells TypeScript which fields exist:
