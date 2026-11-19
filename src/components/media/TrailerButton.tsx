@@ -22,7 +22,7 @@ export function TrailerButton({ youtubeKey, title }: TrailerButtonProps) {
   return (
     // Dialog.Root keeps the open/closed state for us (like a built-in useState).
     <Dialog.Root>
-      <Dialog.Trigger className={buttonStyles({ size: "lg" })}>
+      <Dialog.Trigger className={buttonStyles({ className: "h-11 rounded-md px-4" })}>
         <Play className="fill-current" /> Watch trailer
       </Dialog.Trigger>
 

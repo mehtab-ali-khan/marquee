@@ -1,8 +1,8 @@
 import Image from "next/image";
 import { Star } from "lucide-react";
-import { Badge } from "@/components/ui/Badge";
 import { Container } from "@/components/ui/Container";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/images";
+import { cn } from "@/lib/utils";
 import type { Genre } from "@/lib/tmdb/types";
 
 // The top of every detail page (movie AND TV): backdrop, poster, title,
@@ -40,82 +40,70 @@ export function DetailHeader({
   const visibleFacts = facts.filter(Boolean); // drop null/undefined/""
 
   return (
-    <>
-      {/* Backdrop band at the top, fading into the page. */}
-      <div className="relative h-[42vh] min-h-72 overflow-hidden md:h-[55vh]">
-        {backdrop && (
+    <section aria-labelledby="title-heading" className="relative isolate overflow-hidden border-b border-line bg-surface">
+      {backdrop && (
+        <div className="absolute inset-x-0 top-0 -z-10 h-60 md:inset-y-0 md:right-0 md:left-auto md:h-full md:w-[70%]">
           <Image
             src={backdrop}
             alt=""
             fill
-            sizes="100vw"
+            sizes="(max-width: 767px) 100vw, 70vw"
             loading="eager"
             fetchPriority="high"
-            className="object-cover object-top"
+            className="object-cover object-[center_32%]"
           />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-canvas via-canvas/50 to-canvas/10" />
-      </div>
+          <div className="absolute inset-0 bg-linear-to-t from-surface via-surface/45 to-surface/10 md:bg-linear-to-r md:from-surface md:via-surface/80 md:to-surface/15" />
+        </div>
+      )}
+      <Container className={cn("pb-8 md:py-12 lg:py-16", backdrop ? "pt-32" : "pt-8")}>
+        <div className="flex items-end gap-5 md:items-center md:gap-8 lg:gap-10">
+          {poster && (
+            <div className="relative hidden aspect-[2/3] w-40 shrink-0 overflow-hidden rounded-lg border border-white/15 bg-raised shadow-xl md:block lg:w-48">
+              <Image src={poster} alt="" fill sizes="(min-width: 1024px) 192px, 160px" className="object-cover" />
+            </div>
+          )}
 
-      {/* Poster + info. The negative margin pulls it up over the backdrop. */}
-      <Container className="relative -mt-40 md:-mt-56">
-        <div className="flex flex-col gap-8 md:flex-row md:items-end">
-          <div className="relative aspect-[2/3] w-40 shrink-0 overflow-hidden rounded-md border border-line bg-surface shadow-2xl shadow-black/50 md:w-64">
-            {poster && (
-              <Image
-                src={poster}
-                alt={`Poster for ${title}`}
-                fill
-                sizes="(max-width: 768px) 160px, 256px"
-                className="object-cover"
-              />
-            )}
-          </div>
-
-          <div className="max-w-3xl">
-            <h1 className="text-4xl md:text-5xl">{title}</h1>
-            {tagline && <p className="mt-3 font-display text-lg text-fg-muted italic">{tagline}</p>}
-
-            {/* Meta line: facts and rating, separated by dots. */}
-            <p className="mt-4 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-fg-muted tabular-nums">
-              {visibleFacts.map((fact, i) => (
-                <span key={fact} className="flex items-center gap-3">
-                  {i > 0 && <span aria-hidden="true">·</span>}
+          <div className="min-w-0 max-w-2xl">
+            <div className="mb-2 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-fg-muted tabular-nums">
+              {visibleFacts.map((fact, index) => (
+                <span key={fact} className="inline-flex items-center gap-2">
+                  {index > 0 && <span aria-hidden="true">·</span>}
                   {fact}
                 </span>
               ))}
               {rating && rating.average > 0 && (
-                <span className="flex items-center gap-3">
-                  {visibleFacts.length > 0 && <span aria-hidden="true">·</span>}
-                  <span className="flex items-center gap-1">
-                    <Star className="size-3.5 fill-accent text-accent" aria-hidden="true" />
-                    {rating.average.toFixed(1)}
-                    <span className="text-fg-subtle">({rating.count.toLocaleString("en-US")} votes)</span>
-                  </span>
+                <span
+                  className="ml-1 inline-flex items-center gap-1.5 rounded-md bg-black/40 px-2 py-1 font-semibold text-fg"
+                  aria-label={`TMDB rating ${rating.average.toFixed(1)} out of 10, ${rating.count.toLocaleString("en-US")} votes`}
+                >
+                  <Star className="size-3.5 fill-accent text-accent" aria-hidden="true" />
+                  {rating.average.toFixed(1)}
                 </span>
               )}
-            </p>
+            </div>
+            <h1 id="title-heading" className="text-4xl leading-tight tracking-tight sm:text-5xl lg:text-6xl">{title}</h1>
+            {tagline && <p className="mt-2 text-base text-fg-muted sm:text-lg">{tagline}</p>}
 
             {genres.length > 0 && (
-              <ul className="mt-4 flex flex-wrap gap-2">
+              <ul aria-label="Genres" className="mt-4 flex flex-wrap gap-1.5">
                 {genres.map((genre) => (
-                  <li key={genre.id}>
-                    <Badge>{genre.name}</Badge>
+                  <li key={genre.id} className="rounded-full border border-white/15 bg-black/20 px-2.5 py-1 text-xs text-fg">
+                    {genre.name}
                   </li>
                 ))}
               </ul>
             )}
 
             {credit && credit.names.length > 0 && (
-              <p className="mt-5 text-sm text-fg-muted">
-                {credit.label} <span className="text-fg">{credit.names.join(", ")}</span>
+              <p className="mt-4 text-sm text-fg-muted">
+                {credit.label} <span className="font-medium text-fg">{credit.names.join(", ")}</span>
               </p>
             )}
 
-            {children && <div className="mt-8 flex flex-wrap gap-3">{children}</div>}
+            {children && <div className="mt-6 flex flex-wrap items-start gap-2">{children}</div>}
           </div>
         </div>
       </Container>
-    </>
+    </section>
   );
 }

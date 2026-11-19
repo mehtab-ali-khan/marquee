@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { TitleLibraryActions } from "@/features/library/TitleLibraryActions";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DetailHeader } from "@/components/media/DetailHeader";
@@ -83,6 +85,9 @@ export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
         {/* A Server Component rendering a Client Component: the page stays on the
             server, only the button + modal ship JavaScript to the browser. */}
         {trailer && <TrailerButton youtubeKey={trailer.key} title={movie.title} />}
+        <Suspense fallback={<span aria-hidden="true" className="block h-11 w-40 rounded-md bg-canvas/40" />}>
+          <TitleLibraryActions type="movie" id={movie.id} />
+        </Suspense>
       </DetailHeader>
 
       <Container>

@@ -1,3 +1,5 @@
+import { Suspense } from "react";
+import { TitleLibraryActions } from "@/features/library/TitleLibraryActions";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { DetailHeader } from "@/components/media/DetailHeader";
@@ -84,6 +86,9 @@ export default async function TvPage({ params }: PageProps<"/tv/[id]">) {
         credit={{ label: "Created by", names: show.created_by.map((c) => c.name) }}
       >
         {trailer && <TrailerButton youtubeKey={trailer.key} title={show.name} />}
+        <Suspense fallback={<span aria-hidden="true" className="block h-11 w-40 rounded-md bg-canvas/40" />}>
+          <TitleLibraryActions type="tv" id={show.id} />
+        </Suspense>
       </DetailHeader>
 
       <Container>
