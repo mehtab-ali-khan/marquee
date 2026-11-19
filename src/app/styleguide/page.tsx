@@ -4,7 +4,7 @@ import { Heart, Play, Plus, Search, Star } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button, buttonStyles } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { Skeleton } from "@/components/ui/Skeleton";
+import { MediaCardSkeleton, MediaRailSkeleton } from "@/components/media/MediaSkeletons";
 
 // Page-level metadata. Combined with the template in layout.tsx,
 // the browser tab reads "Styleguide · Marquee".
@@ -49,7 +49,8 @@ function Section({ title, children }: { title: string; children: React.ReactNode
 
 export default function StyleguidePage() {
   return (
-    <Container className="py-16">
+    <>
+      <Container className="pt-16">
       <header className="mb-12 max-w-2xl">
         <p className="mb-3 text-xs font-medium tracking-[0.2em] text-accent uppercase">Design system</p>
         <h1 className="mb-4 text-5xl">Marquee</h1>
@@ -142,11 +143,7 @@ export default function StyleguidePage() {
         </p>
         <div className="grid grid-cols-2 gap-6 sm:grid-cols-4 lg:grid-cols-6">
           {[0, 1].map((i) => (
-            <div key={i}>
-              <Skeleton className="aspect-[2/3] w-full" />
-              <Skeleton className="mt-3 h-4 w-3/4" />
-              <Skeleton className="mt-2 h-3 w-1/3" />
-            </div>
+            <MediaCardSkeleton key={i} />
           ))}
           <div className="group cursor-pointer">
             <div className="aspect-[2/3] overflow-hidden rounded-md border border-line bg-surface transition-transform duration-250 ease-out-soft group-hover:-translate-y-1">
@@ -159,6 +156,15 @@ export default function StyleguidePage() {
           </div>
         </div>
       </Section>
-    </Container>
+
+      <Section title="Loading rail">
+        <p className="mb-2 max-w-xl text-sm text-fg-muted">
+          What a poster row looks like while its data loads on the home page.
+        </p>
+      </Section>
+      </Container>
+      {/* Outside the Container: the rail has its own, so its edges line up with the page. */}
+      <MediaRailSkeleton title="Popular movies" />
+    </>
   );
 }

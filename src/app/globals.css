@@ -81,6 +81,19 @@
 }
 
 /* =========================================================================
+   CUSTOM UTILITIES - our own Tailwind classes
+   ========================================================================= */
+
+/* "scrollbar-none": hide the scrollbar but keep scrolling (swipe, trackpad,
+   shift+wheel, keyboard). Used by horizontal poster rows. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* =========================================================================
    BASE STYLES - apply to plain HTML elements
    ========================================================================= */
 @layer base {
