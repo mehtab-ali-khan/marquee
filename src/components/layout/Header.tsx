@@ -1,7 +1,7 @@
 import Link from "next/link";
-import { Search } from "lucide-react";
 import { buttonStyles } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { CommandPalette } from "./CommandPalette";
 import { NavLink } from "./NavLink";
 
 // The bar at the top of every page.
@@ -40,9 +40,8 @@ export function Header() {
 
         {/* Right side. ml-auto pushes this group to the far right. */}
         <div className="ml-auto flex items-center gap-2">
-          <Link href="/search" aria-label="Search" className={buttonStyles({ variant: "ghost", size: "icon" })}>
-            <Search />
-          </Link>
+          {/* Client Component island: the ⌘K search palette and its button. */}
+          <CommandPalette />
           <Link href="/login" className={buttonStyles({ variant: "secondary", size: "sm" })}>
             Sign in
           </Link>
