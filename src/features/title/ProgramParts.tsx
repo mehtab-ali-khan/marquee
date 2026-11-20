@@ -202,11 +202,13 @@ function Headshots({ cast }: { cast: Program["cast"] }) {
 
 function CreditLine({ label, people }: { label: string; people: Person[] }) {
   return (
-    <div className="flex items-baseline gap-2 text-sm">
+    // min-w-0 (here and on <dd>): flex/grid items never shrink below their text by
+    // default, so long names pushed the page sideways on phones instead of truncating.
+    <div className="flex min-w-0 items-baseline gap-2 text-sm">
       <dt className="max-w-[55%] shrink-0 truncate text-fg-muted">{label}</dt>
       {/* The dotted "leader" between the role and the name, like printed credits. */}
       <span className="min-w-6 flex-1 -translate-y-1 border-b border-dotted border-fg-subtle/50" aria-hidden="true" />
-      <dd className="truncate text-right text-fg">
+      <dd className="min-w-0 truncate text-right text-fg">
         {people.map((p, i) => (
           <span key={p.id}>
             {i > 0 && ", "}

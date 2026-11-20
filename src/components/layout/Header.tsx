@@ -4,7 +4,7 @@ import { Container } from "@/components/ui/Container";
 import { CommandPalette } from "./CommandPalette";
 import { HeaderFrame, MobileNav } from "./HeaderFrame";
 import { DesktopNav } from "./NavLink";
-import { UserMenu, UserMenuFallback } from "./UserMenu";
+import { MobileAccount, UserMenu, UserMenuFallback } from "./UserMenu";
 
 const navItems = [
   { href: "/", label: "Home" },
@@ -15,7 +15,7 @@ const navItems = [
 export function Header() {
   return (
     <HeaderFrame>
-      <Container className="grid h-full grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center gap-x-2">
+      <Container className="grid h-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
         <div className="flex min-w-0 items-center gap-2 xl:gap-5">
           <Link href="/" aria-label="Marquee home" className="group flex w-fit shrink-0 items-center gap-1.5 rounded-sm sm:gap-2">
             <span className="grid size-5 place-items-center rounded-[5px] border border-accent/45 bg-canvas/60 sm:size-7" aria-hidden="true">
@@ -33,8 +33,14 @@ export function Header() {
         </div>
 
         <div className="flex items-center justify-self-end gap-1.5 sm:gap-2">
-          <Suspense fallback={<UserMenuFallback />}><UserMenu /></Suspense>
-          <MobileNav items={navItems} />
+          {/* Desktop: avatar menu. Phones/tablets: everything lives in the full-screen menu. */}
+          <div className="hidden lg:block">
+            <Suspense fallback={<UserMenuFallback />}><UserMenu /></Suspense>
+          </div>
+          <MobileNav
+            items={navItems}
+            account={<Suspense fallback={<div className="h-44 rounded-xl border border-line bg-surface" />}><MobileAccount /></Suspense>}
+          />
         </div>
       </Container>
     </HeaderFrame>
