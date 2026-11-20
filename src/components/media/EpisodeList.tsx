@@ -21,9 +21,11 @@ type EpisodeListProps = {
   seasons: SeasonOption[];
   initialSeason: number;
   initialEpisodes: EpisodeItem[];
+  /** false when the page already titles this section (e.g. a numbered chapter). */
+  showHeading?: boolean;
 };
 
-export function EpisodeList({ showId, seasons, initialSeason, initialEpisodes }: EpisodeListProps) {
+export function EpisodeList({ showId, seasons, initialSeason, initialEpisodes, showHeading = true }: EpisodeListProps) {
   const [selected, setSelected] = useState(initialSeason);
   const [loaded, setLoaded] = useState<Record<number, EpisodeItem[]>>({ [initialSeason]: initialEpisodes });
   const [failed, setFailed] = useState<Record<number, boolean>>({});
@@ -49,11 +51,15 @@ export function EpisodeList({ showId, seasons, initialSeason, initialEpisodes }:
   }, [showId, selected, loaded, failed, retry]);
 
   return (
-    <section aria-labelledby="episodes-heading">
+    <section aria-labelledby={showHeading ? "episodes-heading" : undefined}>
       <div className="mb-4 flex items-center justify-between gap-4">
-        <h3 id="episodes-heading" className="text-xl">
-          Episodes
-        </h3>
+        {showHeading ? (
+          <h3 id="episodes-heading" className="text-xl">
+            Episodes
+          </h3>
+        ) : (
+          <span />
+        )}
         {seasons.length > 1 ? (
           <SeasonMenu seasons={seasons} selected={selected} onSelect={setSelected} />
         ) : (

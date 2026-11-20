@@ -388,3 +388,32 @@ body:has(.screening-home) .marquee-site-header[data-scrolled="false"] {
 @media (prefers-reduced-motion: reduce) {
   .ken-burns { animation: none; }
 }
+
+/* =========================================================================
+   DETAIL PAGE: "Festival Program" (features/title)
+   ========================================================================= */
+
+/* The ticket stub: two halves. Each half gets two half-circle "notches" cut
+   out where they meet (CSS masks: a radial gradient that is transparent
+   inside a 11px circle at the corner), so together they look like a ticket
+   with a perforated tear line. Masks cut the border too, so it reads as real
+   cut-outs, not drawn circles. */
+.ticket-top,
+.ticket-bottom {
+  --notch: 11px;
+  mask:
+    radial-gradient(circle at 0 var(--notch-y), #0000 var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% var(--notch-y), #0000 var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+}
+.ticket-top { --notch-y: 100%; }
+.ticket-bottom { --notch-y: 0; }
+
+/* Faint brass light "spilling" below the screen, as in a dark cinema. */
+.screen-glow {
+  background: radial-gradient(ellipse 60% 100% at 50% 0, rgb(228 168 83 / 0.14), transparent 70%);
+}
+
+/* Chapters land below the sticky header + chapter bar when jumped to. */
+.program-chapter {
+  scroll-margin-top: calc(var(--marquee-header-height) + 3.5rem);
+}

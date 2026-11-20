@@ -1,21 +1,14 @@
-import { Suspense } from "react";
-import { TitleLibraryActions } from "@/features/library/TitleLibraryActions";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { DetailHeader } from "@/components/media/DetailHeader";
-import { MediaRail } from "@/components/media/MediaRail";
-import { PersonCard } from "@/components/media/PersonCard";
+import { Suspense } from "react";
 import { EpisodesSection, EpisodesSectionSkeleton } from "@/components/media/EpisodesSection";
-import { TvCard } from "@/components/media/TitleCards";
-import { TrailerButton } from "@/components/media/TrailerButton";
-import { WatchProviders } from "@/components/media/WatchProviders";
-import { Container } from "@/components/ui/Container";
-import { WATCH_REGION, formatYears, pickTrailer, plural } from "@/lib/tmdb/details";
+import { TitleProgram } from "@/features/title/TitleProgram";
+import { tvProgram } from "@/features/title/program";
 import { backdropUrl } from "@/lib/tmdb/images";
 import { getTvShow } from "@/lib/tmdb/tv";
 
-// /tv/1396 → Breaking Bad. Same structure as the movie page; the shared
-// pieces (header, cast rail, trailer, where to watch) are reused components.
+// /tv/1396 → Breaking Bad. Same "Festival Program" layout as movies, plus an
+// Episodes chapter.
 
 /** Load the show, or show the 404 page if it doesn't exist. */
 async function loadShow(idParam: string) {
@@ -43,80 +36,15 @@ export default async function TvPage({ params }: PageProps<"/tv/[id]">) {
   const { id } = await params;
   const show = await loadShow(id);
 
-  const cast = show.credits.cast.slice(0, 20);
-  const trailer = pickTrailer(show.videos.results);
-  const recommendations = show.recommendations.results;
-
   return (
-    <main className="pb-16">
-      <DetailHeader
-        title={show.name}
-        tagline={show.tagline}
-        backdropPath={show.backdrop_path}
-        posterPath={show.poster_path}
-        facts={[
-          formatYears(show),
-          plural(show.number_of_seasons, "season"),
-          plural(show.number_of_episodes, "episode"),
-        ]}
-        rating={{ average: show.vote_average, count: show.vote_count }}
-        genres={show.genres}
-        credit={{ label: "Created by", names: show.created_by.map((c) => c.name) }}
-      >
-        {trailer && <TrailerButton youtubeKey={trailer.key} title={show.name} />}
-        <Suspense fallback={<span aria-hidden="true" className="block h-11 w-40 rounded-md bg-canvas/40" />}>
-          <TitleLibraryActions type="tv" id={show.id} />
-        </Suspense>
-      </DetailHeader>
-
-      <Container>
-        <div className="mt-12 grid gap-10 lg:grid-cols-[minmax(0,2fr)_minmax(0,1fr)] lg:gap-16">
-          <section>
-            <h2 className="mb-3 text-xl">Overview</h2>
-            <p className="max-w-3xl leading-relaxed text-fg-muted">{show.overview || "No overview available yet."}</p>
-            {show.networks.length > 0 && (
-              <p className="mt-4 text-sm text-fg-muted">
-                On <span className="text-fg">{show.networks.map((n) => n.name).join(", ")}</span>
-                {" · "}
-                {show.status}
-              </p>
-            )}
-          </section>
-          <WatchProviders
-            region={show["watch/providers"].results[WATCH_REGION.code]}
-            countryName={WATCH_REGION.name}
-          />
-        </div>
-      </Container>
-
-      {/* The TV-only section: episodes per season (streams in on its own). */}
-      <Container className="mt-12 max-w-4xl">
+    <TitleProgram
+      program={tvProgram(show)}
+      episodes={
+        // The first season streams in on its own, after the rest of the page.
         <Suspense fallback={<EpisodesSectionSkeleton />}>
-          <EpisodesSection show={show} />
+          <EpisodesSection show={show} showHeading={false} />
         </Suspense>
-      </Container>
-
-      {cast.length > 0 && (
-        <MediaRail title="Cast">
-          {cast.map((person) => (
-            <PersonCard
-              key={person.id}
-              id={person.id}
-              name={person.name}
-              role={person.character}
-              profilePath={person.profile_path}
-            />
-          ))}
-        </MediaRail>
-      )}
-
-      {recommendations.length > 0 && (
-        <MediaRail title="More like this">
-          {recommendations.map((rec) => (
-            <TvCard key={rec.id} show={rec} />
-          ))}
-        </MediaRail>
-      )}
-    </main>
+      }
+    />
   );
 }

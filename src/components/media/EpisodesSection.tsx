@@ -7,7 +7,7 @@ import { EpisodeList } from "./EpisodeList";
 // fetches it, so the first list arrives WITH the page (no client fetch).
 // Used by the TV detail modal and the full TV page (wrap it in <Suspense>).
 
-export async function EpisodesSection({ show }: { show: TvDetails }) {
+export async function EpisodesSection({ show, showHeading = true }: { show: TvDetails; showHeading?: boolean }) {
   // Season 0 = "Specials" (extras): hide it unless it's all there is.
   const regular = show.seasons.filter((s) => s.season_number > 0);
   const seasons = (regular.length > 0 ? regular : show.seasons).map((s) => ({
@@ -30,6 +30,7 @@ export async function EpisodesSection({ show }: { show: TvDetails }) {
       seasons={seasons}
       initialSeason={initialSeason}
       initialEpisodes={season ? toEpisodeItems(season) : []}
+      showHeading={showHeading}
     />
   );
 }

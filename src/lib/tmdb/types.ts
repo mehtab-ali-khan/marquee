@@ -95,6 +95,13 @@ export type MovieDetails = Omit<MovieSummary, "genre_ids"> & {
   // Keyed by country code: results.US, results.PK, results.DE...
   "watch/providers": { results: Record<string, WatchProviderRegion> };
   recommendations: Paginated<MovieSummary>;
+  // For the spec sheet:
+  budget: number; // USD, 0 = unknown
+  revenue: number; // box office in USD, 0 = unknown
+  original_language: string; // "en"
+  production_companies: { id: number; name: string }[];
+  /** Per-country release info; the US entry holds the certificate ("R", "PG-13"). */
+  release_dates: { results: { iso_3166_1: string; release_dates: { certification: string; type: number }[] }[] };
 };
 
 /** A TV show as it appears in lists. Note: `name` instead of `title`. */
@@ -161,6 +168,10 @@ export type TvDetails = Omit<TvSummary, "genre_ids"> & {
   videos: { results: Video[] };
   "watch/providers": { results: Record<string, WatchProviderRegion> };
   recommendations: Paginated<TvSummary>;
+  // For the spec sheet:
+  original_language: string;
+  /** Per-country TV ratings; the US entry holds e.g. "TV-MA". */
+  content_ratings: { results: { iso_3166_1: string; rating: string }[] };
 };
 
 /** A person as it appears in lists (cast rows, search results). */

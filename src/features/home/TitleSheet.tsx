@@ -97,7 +97,8 @@ export function tvSheet(show: TvDetails): Sheet {
 function similarMovie(m: MovieSummary) {
   return {
     key: `movie-${m.id}`,
-    href: `/movie/${m.id}`,
+    // Stays in the modal: /title/… is intercepted on the home page.
+    href: `/title/movie/${m.id}`,
     title: m.title,
     year: m.release_date?.slice(0, 4),
     overview: m.overview,
@@ -107,7 +108,7 @@ function similarMovie(m: MovieSummary) {
 function similarShow(s: TvSummary) {
   return {
     key: `tv-${s.id}`,
-    href: `/tv/${s.id}`,
+    href: `/title/tv/${s.id}`,
     title: s.name,
     year: s.first_air_date?.slice(0, 4),
     overview: s.overview,
@@ -141,6 +142,15 @@ export function TitleSheet({
           />
         )}
         <div className="absolute inset-0 bg-gradient-to-t from-surface via-surface/30 to-transparent" />
+        {/* Top-left of the image: go to the full detail page (chapters, credits, details).
+            A normal Link to /movie/550: that URL is NOT intercepted, so it opens the page. */}
+        <Link
+          href={`/${sheet.type}/${sheet.id}`}
+          className="absolute top-3 left-3 z-10 inline-flex h-10 items-center gap-1.5 rounded-full bg-black/65 pr-4 pl-3.5 text-sm text-fg backdrop-blur-sm transition-colors duration-150 hover:bg-black/85 hover:text-accent"
+        >
+          <ArrowUpRight className="size-4" aria-hidden="true" />
+          Full page
+        </Link>
         <div className="absolute inset-x-0 bottom-0 px-5 pb-6 sm:px-10 sm:pb-8">
           <h2 className="max-w-2xl text-3xl leading-[1.05] sm:text-5xl [text-shadow:0_2px_24px_rgb(0_0_0/0.5)]">
             {sheet.title}
@@ -266,15 +276,6 @@ export function TitleSheet({
             </ul>
           </section>
         )}
-
-        {/* 5. Full page: a plain <a> = full page load, so it ISN'T intercepted. */}
-        <a
-          href={`/${sheet.type}/${sheet.id}`}
-          className="inline-flex items-center gap-1.5 text-sm text-fg-muted underline-offset-4 transition-colors hover:text-fg hover:underline"
-        >
-          Open full page with cast and recommendations{" "}
-          <ArrowUpRight className="size-3.5" aria-hidden="true" />
-        </a>
       </div>
     </article>
   );

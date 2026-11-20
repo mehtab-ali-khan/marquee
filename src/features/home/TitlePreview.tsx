@@ -44,6 +44,11 @@ export function TitlePreview({ item, anchor, card, onOpenDetails, onPointerEnter
   const reduceMotion = useReducedMotion();
   const previewRef = useRef<HTMLDivElement>(null);
 
+  // Two destinations:
+  //  - the image → the FULL detail page (/movie/550), like clicking the card
+  //  - ⌄ "More info" → the detail MODAL (/title/movie/550, intercepted on the home page)
+  const modalHref = `/title/${item.type}/${item.id}`;
+
   // "More info": the modal grows out of THIS preview and later returns into the card.
   function openDetails(event: React.MouseEvent) {
     if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return; // new tab etc.
@@ -112,7 +117,7 @@ export function TitlePreview({ item, anchor, card, onOpenDetails, onPointerEnter
       onPointerLeave={onPointerLeave}
     >
       {/* Image area (16:9) with a slow "Ken Burns" zoom instead of a video. */}
-      <Link href={item.href} scroll={false} onClick={openDetails} tabIndex={-1} className="relative block aspect-video overflow-hidden bg-raised">
+      <Link href={item.href} onClick={onOpenDetails} tabIndex={-1} className="relative block aspect-video overflow-hidden bg-raised">
         <div className="ken-burns absolute inset-0">
           {lowRes && (
             // Same src + sizes as the card → the browser already has this file: instant.
@@ -148,7 +153,7 @@ export function TitlePreview({ item, anchor, card, onOpenDetails, onPointerEnter
           )}
           <WatchlistToggle item={item} details={details} />
           <Link
-            href={item.href}
+            href={modalHref}
             scroll={false}
             onClick={openDetails}
             aria-label={`More info about ${item.title}`}

@@ -5,11 +5,10 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clapperboard } from "lucide-react";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/images";
-import { setModalOrigin } from "./modal-origin";
 import { usePreview, type PreviewItem } from "./PreviewLayer";
 
 // A 16:9 title card (Netflix-style). Resting the MOUSE on it opens the hover
-// preview. Touch and keyboard users get a normal link to the detail page.
+// preview. A click (or a tap, or Enter) opens the full detail page.
 
 // How wide a card is at each screen size (matches .title-row in globals.css),
 // so the browser downloads a small enough image.
@@ -20,26 +19,21 @@ export function TitleCard({ item, eager = false }: { item: Omit<PreviewItem, "im
   const { hoverStart, hoverEnd, closeNow } = usePreview();
   // Prefetch on INTENT (from Next's prefetching guide): every card shares the
   // cheap "App Shell" prefetch ("auto"); once you rest the mouse on a card or
-  // focus it, it fully prefetches (true), so the modal's data is usually
-  // already here when you click and it opens straight to the content.
+  // focus it, it fully prefetches (true), so the detail page's data is usually
+  // already here when you click.
   const [intent, setIntent] = useState(false);
   const src = backdropUrl(item.backdropPath, "w780") ?? posterUrl(item.posterPath, "w500");
 
   return (
     <li>
+      {/* A click opens the FULL detail page (/movie/550). The modal only opens
+          from the preview's ⌄ button, which links to /title/movie/550. */}
       <Link
         ref={ref}
         href={item.href}
         prefetch={intent ? true : "auto"}
         onFocus={() => setIntent(true)}
-        // Don't jump to the top: the modal opens over the page right where you are.
-        scroll={false}
-        onClick={(event) => {
-          if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0 || !ref.current) return;
-          // The detail modal grows out of this card, and later shrinks back into it.
-          setModalOrigin({ from: ref.current.getBoundingClientRect(), returnTo: ref.current });
-          closeNow(); // a preview might be opening for this card
-        }}
+        onClick={() => closeNow()} // a preview might be opening for this card
         className="title-card group relative block aspect-video overflow-hidden rounded-md bg-surface outline-offset-4"
         onPointerEnter={(event) => {
           if (event.pointerType === "mouse" && ref.current) {

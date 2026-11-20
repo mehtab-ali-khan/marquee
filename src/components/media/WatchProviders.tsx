@@ -8,6 +8,8 @@ import type { WatchProvider, WatchProviderRegion } from "@/lib/tmdb/types";
 type WatchProvidersProps = {
   region: WatchProviderRegion | undefined; // undefined = no data for this country
   countryName: string; // "the United States", for the empty message
+  /** false when the page already titles this section (e.g. a numbered chapter). */
+  showHeading?: boolean;
 };
 
 const groups: { key: keyof Omit<WatchProviderRegion, "link">; label: string }[] = [
@@ -18,14 +20,14 @@ const groups: { key: keyof Omit<WatchProviderRegion, "link">; label: string }[] 
   { key: "buy", label: "Buy" },
 ];
 
-export function WatchProviders({ region, countryName }: WatchProvidersProps) {
+export function WatchProviders({ region, countryName, showHeading = true }: WatchProvidersProps) {
   const filled = groups
     .map((group) => ({ ...group, providers: sortByPriority(region?.[group.key]) }))
     .filter((group) => group.providers.length > 0);
 
   return (
     <section>
-      <h2 className="mb-4 text-xl">Where to watch</h2>
+      {showHeading && <h2 className="mb-4 text-xl">Where to watch</h2>}
 
       {filled.length === 0 ? (
         <p className="text-sm text-fg-muted">Not available to stream, rent or buy in {countryName} yet.</p>

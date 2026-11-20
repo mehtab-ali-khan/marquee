@@ -52,7 +52,7 @@ export async function getMovie(id: number): Promise<MovieDetails | null> {
     // append_to_response: get details + cast/crew + trailers + streaming services
     // + recommendations in ONE request instead of five separate calls to TMDB.
     return await tmdbFetch<MovieDetails>(`/movie/${id}`, {
-      append_to_response: "credits,videos,watch/providers,recommendations",
+      append_to_response: "credits,videos,watch/providers,recommendations,release_dates",
     });
   } catch (error) {
     if (error instanceof TmdbError && error.status === 404) return null;

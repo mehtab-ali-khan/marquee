@@ -36,7 +36,7 @@ export async function getTvShow(id: number): Promise<TvDetails | null> {
   cacheLife("hours");
   try {
     return await tmdbFetch<TvDetails>(`/tv/${id}`, {
-      append_to_response: "credits,videos,watch/providers,recommendations",
+      append_to_response: "credits,videos,watch/providers,recommendations,content_ratings",
     });
   } catch (error) {
     if (error instanceof TmdbError && error.status === 404) return null;
