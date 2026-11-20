@@ -12,11 +12,13 @@ import { cn } from "@/lib/utils";
 
 type Segment = { href: string; label: string; count?: number };
 
-export function SegmentedLinks({ items, activeIndex, label, className }: {
+export function SegmentedLinks({ items, activeIndex, label, className, onSelect }: {
   items: Segment[];
   activeIndex: number;
   label: string;
   className?: string;
+  /** Switch in the browser instead of asking the server (data already loaded). Links still work without JS. */
+  onSelect?: (index: number) => void;
 }) {
   const router = useRouter();
   const [destination, setDestination] = useOptimistic(activeIndex);
@@ -49,8 +51,9 @@ export function SegmentedLinks({ items, activeIndex, label, className }: {
                 if (event.pointerType === "mouse") setHovered(index);
               }}
               onNavigate={(event) => {
-                if (index === activeIndex) return;
                 event.preventDefault();
+                if (index === activeIndex) return;
+                if (onSelect) return onSelect(index);
                 startTransition(() => {
                   setDestination(index);
                   router.push(item.href, { scroll: false });

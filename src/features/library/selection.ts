@@ -1,31 +1,25 @@
+// The library's shelves and how they appear in the URL (/library?tab=favorite).
+// No "server-only": used by the page, the API route and the client view.
+
 export const shelves = [
   { value: "watchlist", label: "Watchlist" },
   { value: "favorite", label: "Favorites" },
   { value: "rated", label: "Rated" },
 ] as const;
 
-export type LibrarySelection = {
-  tab: (typeof shelves)[number]["value"];
-  type: "movie" | "tv";
-  page: number;
-};
+export type Shelf = (typeof shelves)[number]["value"];
+export type LibraryMediaType = "movie" | "tv";
 
-export function readLibrarySelection({ tab, type, page }: {
-  tab?: unknown;
-  type?: unknown;
-  page?: unknown;
-}): LibrarySelection {
-  const pageNumber = typeof page === "string" ? Number(page) : 1;
-
-  return {
-    tab: shelves.find((shelf) => shelf.value === tab)?.value ?? "watchlist",
-    type: type === "tv" ? "tv" : "movie",
-    page: Number.isSafeInteger(pageNumber) ? Math.max(1, Math.min(500, pageNumber)) : 1,
-  };
+/** URL values are untrusted: anything unknown falls back to the watchlist. */
+export function readShelf(tab: unknown): Shelf {
+  return shelves.find((shelf) => shelf.value === tab)?.value ?? "watchlist";
 }
 
-export function libraryQuery({ tab, type, page }: LibrarySelection) {
-  const query = new URLSearchParams({ tab, type });
-  if (page > 1) query.set("page", String(page));
-  return query.toString();
+export function readMediaType(type: unknown): LibraryMediaType {
+  return type === "tv" ? "tv" : "movie";
+}
+
+export function readPage(page: unknown) {
+  const n = typeof page === "string" ? Number(page) : 1;
+  return Number.isSafeInteger(n) ? Math.max(1, Math.min(500, n)) : 1;
 }

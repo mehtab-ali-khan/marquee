@@ -1,18 +1,24 @@
 import "server-only";
 import { tmdbFetch } from "./client";
-import { movieToCard, tvToCard } from "./cards";
+import { movieToCard, tvToCard, type CardData } from "./cards";
 import type { MovieSummary, Paginated, TvSummary } from "./types";
 
 type MediaType = "movie" | "tv";
 type Shelf = "watchlist" | "favorite" | "rated";
 type Session = { accountId: number; sessionId: string };
 
+/** One saved title: card data, plus what the library needs to remove it again. */
+export type LibraryItem = CardData & { type: MediaType; id: number; userRating?: number };
+export type LibraryPage = { items: LibraryItem[]; page: number; totalPages: number; totalResults: number };
+export type LibraryOverview = Record<Shelf, Record<MediaType, LibraryPage>>;
+
+/** One page (20 titles) of one shelf, newest additions first. Per-user data: never cached across users. */
 export async function getLibraryPage(
   { accountId, sessionId }: Session,
   shelf: Shelf,
   type: MediaType,
   page: number,
-) {
+): Promise<LibraryPage> {
   const path = `/account/${accountId}/${shelf}/${type === "movie" ? "movies" : "tv"}`;
   const params = { session_id: sessionId, page, sort_by: "created_at.desc" };
   const data = type === "movie"
@@ -20,11 +26,36 @@ export async function getLibraryPage(
     : await tmdbFetch<Paginated<TvSummary & { rating?: number }>>(path, params);
 
   return {
+    page: data.page,
     totalPages: Math.min(data.total_pages, 500),
-    cards: data.results.map((item) => ({
+    totalResults: data.total_results,
+    items: data.results.map((item) => ({
       ...("title" in item ? movieToCard(item) : tvToCard(item)),
+      type,
+      id: item.id,
       userRating: item.rating,
     })),
+  };
+}
+
+/**
+ * The first page of EVERY shelf (3 shelves × films/series = 6 requests), all at
+ * once. They run in parallel, so this takes about as long as the slowest single
+ * request, and afterwards switching tabs needs no network at all.
+ * It also gives us the counts shown on the tabs.
+ */
+export async function getLibraryOverview(session: Session): Promise<LibraryOverview> {
+  const shelves = ["watchlist", "favorite", "rated"] as const;
+  const pages = await Promise.all(
+    shelves.flatMap((shelf) => [
+      getLibraryPage(session, shelf, "movie", 1),
+      getLibraryPage(session, shelf, "tv", 1),
+    ]),
+  );
+  return {
+    watchlist: { movie: pages[0], tv: pages[1] },
+    favorite: { movie: pages[2], tv: pages[3] },
+    rated: { movie: pages[4], tv: pages[5] },
   };
 }
 
