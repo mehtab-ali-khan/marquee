@@ -34,7 +34,7 @@ export function MediaRailSkeleton({ title }: { title: string }) {
 export function HeroSkeleton() {
   return (
     <section className="screening-hero relative flex items-end">
-      <Container className="pt-40 pb-8 sm:pb-12 lg:pb-14">
+      <Container className="pt-28 pb-8 sm:pt-40 sm:pb-12 lg:pb-14">
         <div className="min-h-[15rem] max-w-2xl sm:min-h-[17rem]">
           <Skeleton className="mb-4 h-3 w-40" />
           <Skeleton className="h-12 w-4/5 sm:h-20" />
