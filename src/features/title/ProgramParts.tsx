@@ -1,7 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
-import { backdropUrl } from "@/lib/tmdb/images";
+import { backdropUrl, profileUrl } from "@/lib/tmdb/images";
 import type { Person, Program } from "./program";
 
 // The building blocks of the "Festival Program" detail page.
@@ -138,25 +138,65 @@ export function Story({ overview }: { overview: string }) {
 /** End-credits style: "Odysseus ··········· Matt Damon". People link to their pages. */
 export function CreditsRoll({ cast, crew }: { cast: Program["cast"]; crew: Program["crew"] }) {
   return (
-    <div className="space-y-10">
-      {crew.length > 0 && (
-        <dl className="grid gap-x-12 gap-y-3 md:grid-cols-2">
-          {crew.map((group) => (
-            <CreditLine key={group.role} label={group.role} people={group.people} />
-          ))}
-        </dl>
-      )}
+    <div className="space-y-12">
       {cast.length > 0 && (
         <div>
           <h3 className="mb-4 font-sans text-[0.7rem] font-semibold tracking-[0.2em] text-fg-subtle uppercase">Starring</h3>
+          <Headshots cast={cast} />
+        </div>
+      )}
+      {crew.length > 0 && (
+        <div>
+          <h3 className="mb-4 font-sans text-[0.7rem] font-semibold tracking-[0.2em] text-fg-subtle uppercase">Crew</h3>
           <dl className="grid gap-x-12 gap-y-3 md:grid-cols-2">
-            {cast.map((person) => (
-              <CreditLine key={`${person.id}-${person.character}`} label={person.character || "—"} people={[person]} />
+            {crew.map((group) => (
+              <CreditLine key={group.role} label={group.role} people={group.people} />
             ))}
           </dl>
         </div>
       )}
     </div>
+  );
+}
+
+/**
+ * Cast as a strip of program-style headshots: black and white, turning to
+ * color on hover or keyboard focus. Each one opens the person's page.
+ * Scrolls sideways (swipe / trackpad) when there are more than fit.
+ */
+function Headshots({ cast }: { cast: Program["cast"] }) {
+  return (
+    // scroll-px-*: snap cards to the page gutter, not to the row's outer edge (which cut the first one off).
+    <ul className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 scrollbar-none md:-mx-6 md:scroll-px-6 md:px-6 lg:-mx-12 lg:scroll-px-12 lg:px-12">
+      {cast.map((person) => {
+        const photo = profileUrl(person.profilePath, "w185");
+        return (
+          <li key={`${person.id}-${person.character}`} className="w-32 shrink-0 snap-start sm:w-36">
+            <Link href={`/person/${person.id}`} className="group block rounded-md">
+              <div className="relative aspect-[4/5] overflow-hidden rounded-md border border-line bg-raised">
+                {photo ? (
+                  <Image
+                    src={photo}
+                    alt={`Photo of ${person.name}`}
+                    fill
+                    sizes="144px"
+                    className="object-cover grayscale transition-[filter,transform] duration-500 ease-out-soft group-hover:scale-[1.04] group-hover:grayscale-0 group-focus-visible:grayscale-0"
+                  />
+                ) : (
+                  <span className="grid size-full place-items-center font-display text-3xl text-fg-subtle" aria-hidden="true">
+                    {person.name.charAt(0)}
+                  </span>
+                )}
+              </div>
+              <p className="mt-2.5 truncate text-sm font-medium text-fg transition-colors duration-150 group-hover:text-accent">
+                {person.name}
+              </p>
+              {person.character && <p className="truncate text-xs text-fg-subtle">{person.character}</p>}
+            </Link>
+          </li>
+        );
+      })}
+    </ul>
   );
 }
 

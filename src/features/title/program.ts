@@ -24,7 +24,7 @@ export type Program = {
   trailerKey: string | null;
   /** The poster-style billing block under the title: "Directed by …", "Starring …". */
   billing: { label: string; names: string[] }[];
-  cast: (Person & { character: string })[];
+  cast: (Person & { character: string; profilePath: string | null })[];
   crew: { role: string; people: Person[] }[]; // "Directed by", "Music by"...
   specs: { label: string; value: string }[];
   region: WatchProviderRegion | undefined;
@@ -94,7 +94,7 @@ export function movieProgram(movie: MovieDetails): Program {
       { label: "Directed by", names: movie.credits.crew.filter((c) => c.job === "Director").map((c) => c.name) },
       { label: "Starring", names: movie.credits.cast.slice(0, 4).map((c) => c.name) },
     ].filter((line) => line.names.length > 0),
-    cast: movie.credits.cast.slice(0, 12).map(({ id, name, character }) => ({ id, name, character })),
+    cast: movie.credits.cast.slice(0, 12).map(({ id, name, character, profile_path }) => ({ id, name, character, profilePath: profile_path })),
     crew: creditCrew(movie.credits.crew, [
       ["Director", "Directed by"],
       ["Screenplay", "Screenplay by"],
@@ -143,7 +143,7 @@ export function tvProgram(show: TvDetails): Program {
       { label: "Created by", names: show.created_by.map((c) => c.name) },
       { label: "Starring", names: show.credits.cast.slice(0, 4).map((c) => c.name) },
     ].filter((line) => line.names.length > 0),
-    cast: show.credits.cast.slice(0, 12).map(({ id, name, character }) => ({ id, name, character })),
+    cast: show.credits.cast.slice(0, 12).map(({ id, name, character, profile_path }) => ({ id, name, character, profilePath: profile_path })),
     crew: [
       ...(show.created_by.length ? [{ role: "Created by", people: show.created_by.map(({ id, name }) => ({ id, name })) }] : []),
       ...creditCrew(show.credits.crew, [

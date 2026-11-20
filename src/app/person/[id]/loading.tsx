@@ -1,34 +1,22 @@
-import { MediaRailSkeleton } from "@/components/media/MediaSkeletons";
 import { Container } from "@/components/ui/Container";
 import { Skeleton } from "@/components/ui/Skeleton";
 
-// Shown automatically while a person page loads. Mirrors the real layout:
-// portrait + facts on the left, name + biography lines on the right.
+// Shown while a person page loads. Same shapes as the real page:
+// portrait, eyebrow + name + birthplace, ticket stub.
 
 export default function PersonLoading() {
   return (
-    <main className="pb-16">
-      <Container className="pt-12 md:pt-16">
-        <div className="grid gap-10 md:grid-cols-[16rem_minmax(0,1fr)] lg:gap-16">
-          <div>
-            <Skeleton className="aspect-[2/3] w-48 md:w-full" />
-            <Skeleton className="mt-6 h-3 w-20" />
-            <Skeleton className="mt-2 h-4 w-32" />
-            <Skeleton className="mt-4 h-3 w-16" />
-            <Skeleton className="mt-2 h-4 w-40" />
-          </div>
-          <div className="max-w-3xl">
-            <Skeleton className="h-12 w-2/3 md:h-14" />
-            {Array.from({ length: 6 }, (_, i) => (
-              <Skeleton key={i} className={i === 0 ? "mt-8 h-4 w-full" : "mt-2 h-4 w-full"} />
-            ))}
-            <Skeleton className="mt-2 h-4 w-1/2" />
-          </div>
+    <main className="pb-24" aria-busy="true">
+      <Container className="grid items-start gap-10 pt-10 md:grid-cols-[14rem_minmax(0,1fr)] lg:grid-cols-[16rem_minmax(0,1fr)_20rem] lg:gap-14 lg:pt-14">
+        <Skeleton className="aspect-[2/3] w-44 md:w-full" />
+        <div>
+          <Skeleton className="h-3 w-40" />
+          <Skeleton className="mt-5 h-14 w-4/5 lg:h-20" />
+          <Skeleton className="mt-6 h-px w-16" />
+          <Skeleton className="mt-5 h-6 w-1/2" />
         </div>
+        <Skeleton className="h-52 w-full rounded-lg md:col-span-2 lg:col-span-1" />
       </Container>
-      <div className="mt-12">
-        <MediaRailSkeleton title="Known for" />
-      </div>
     </main>
   );
 }

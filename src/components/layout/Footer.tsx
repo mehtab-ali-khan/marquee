@@ -1,58 +1,106 @@
 import Link from "next/link";
-import { ArrowUp, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUp, ArrowUpRight } from "lucide-react";
+import { buttonStyles } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 
-const columns = [
+// The footer as the program's CLOSING CREDITS (same visual language as the
+// detail pages): a closing line, the site's links as an end-credits roll with
+// dotted leaders, and a final title card with the giant wordmark.
+
+type Credit = { role: string; names: { label: string; href: string; external?: boolean }[] };
+
+const credits: Credit[] = [
   {
-    title: "Explore",
-    links: [{ href: "/", label: "Home" }, { href: "/discover", label: "Discover" }, { href: "/search", label: "Search" }],
+    role: "Browse",
+    names: [
+      { label: "Home", href: "/" },
+      { label: "Discover", href: "/discover" },
+      { label: "Search", href: "/search" },
+    ],
   },
   {
-    title: "Your account",
-    links: [{ href: "/library", label: "Library" }, { href: "/login", label: "Sign in" }],
+    role: "Your library",
+    names: [
+      { label: "Watchlist", href: "/library?tab=watchlist" },
+      { label: "Favorites", href: "/library?tab=favorite" },
+      { label: "Rated", href: "/library?tab=rated" },
+    ],
   },
+  { role: "Data", names: [{ label: "The Movie Database", href: "https://www.themoviedb.org", external: true }] },
+  { role: "Availability", names: [{ label: "JustWatch", href: "https://www.justwatch.com", external: true }] },
 ];
 
 export function Footer() {
   return (
-    <footer className="mt-auto border-t border-line bg-surface/55">
-      <Container className="pt-9 pb-5 sm:pt-12">
-        <div className="grid grid-cols-2 gap-x-4 gap-y-7 sm:grid-cols-[2fr_1fr_1fr] lg:grid-cols-[minmax(0,2fr)_1fr_1fr_auto]">
-          <div className="col-span-2 sm:col-span-1">
-            <Link href="/" className="inline-flex items-center gap-2.5 rounded-sm" aria-label="Marquee home">
-              <span className="size-2 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)]" aria-hidden="true" />
-              <span className="font-display text-2xl tracking-[-0.04em]">Marquee</span>
-            </Link>
-            <p className="mt-2 text-sm text-fg-muted">What’s worth watching, tonight.</p>
+    <footer className="mt-auto overflow-hidden border-t border-line bg-surface/40">
+      <Container className="pt-14 sm:pt-20">
+        {/* 1. The closing line */}
+        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+          <div>
+            <p className="text-xs font-semibold tracking-[0.22em] text-accent uppercase">The end</p>
+            <p className="mt-4 max-w-xl font-display text-4xl leading-[1.05] sm:text-5xl">
+              That’s a wrap. <span className="text-fg-muted italic">What’s next?</span>
+            </p>
           </div>
-          {columns.map(({ title, links }) => (
-            <nav key={title} aria-label={`Footer · ${title}`}>
-              <h2 className="mb-2 font-sans text-sm font-semibold tracking-normal">{title}</h2>
-              <ul className="space-y-0.5">
-                {links.map(({ href, label }) => (
-                  <li key={href}>
-                    <Link href={href} className="inline-flex min-h-8 items-center rounded-sm text-sm text-fg-muted transition-colors hover:text-accent">
-                      {label}
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </nav>
-          ))}
-          <div className="col-span-2 self-start sm:col-span-3 lg:col-span-1">
-            <a href="#top" className="inline-flex min-h-10 items-center gap-2 rounded-full border border-line px-3.5 text-sm text-fg-muted transition-colors hover:border-accent/60 hover:text-accent">
-              Back to top <ArrowUp className="size-3.5" aria-hidden="true" />
-            </a>
+          <div className="flex flex-wrap gap-3">
+            <Link href="/discover" className={buttonStyles({ size: "lg", className: "rounded-full" })}>
+              Discover something new <ArrowRight aria-hidden="true" />
+            </Link>
+            <Link href="/search" className={buttonStyles({ variant: "secondary", size: "lg", className: "rounded-full" })}>
+              Search
+            </Link>
           </div>
         </div>
-        <div className="mt-6 flex flex-col items-start gap-2 border-t border-line pt-4 text-xs leading-relaxed text-fg-muted sm:mt-8 sm:flex-row sm:justify-between sm:gap-6">
-          <a href="https://www.themoviedb.org" target="_blank" rel="noopener noreferrer"
-            className="inline-flex shrink-0 items-center gap-1 rounded-sm transition-colors hover:text-accent">
-            Data provided by TMDB <ArrowUpRight aria-hidden="true" className="size-3" />
-          </a>
+
+        {/* 2. End credits */}
+        <dl className="mt-14 grid gap-x-16 gap-y-3 border-t border-line pt-8 md:grid-cols-2">
+          {credits.map((credit) => (
+            <div key={credit.role} className="flex items-baseline gap-2 text-sm">
+              <dt className="shrink-0 text-[0.7rem] font-semibold tracking-[0.2em] text-fg-subtle uppercase">{credit.role}</dt>
+              <span className="min-w-6 flex-1 -translate-y-1 border-b border-dotted border-fg-subtle/40" aria-hidden="true" />
+              <dd className="text-right">
+                {credit.names.map((name, i) => (
+                  <span key={name.label}>
+                    {i > 0 && <span className="text-fg-subtle">, </span>}
+                    {name.external ? (
+                      <a
+                        href={name.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="inline-flex items-center gap-0.5 text-fg-muted transition-colors duration-150 hover:text-accent"
+                      >
+                        {name.label} <ArrowUpRight className="size-3" aria-hidden="true" />
+                      </a>
+                    ) : (
+                      <Link href={name.href} className="text-fg-muted transition-colors duration-150 hover:text-accent">
+                        {name.label}
+                      </Link>
+                    )}
+                  </span>
+                ))}
+              </dd>
+            </div>
+          ))}
+        </dl>
+
+        {/* 3. The final title card */}
+        <div className="mt-14 flex flex-col gap-3 border-t border-line pt-5 text-xs leading-relaxed text-fg-subtle sm:flex-row sm:items-center sm:justify-between sm:gap-6">
           <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+          <a
+            href="#top"
+            className="inline-flex min-h-9 shrink-0 items-center gap-2 self-start rounded-full border border-line px-3.5 text-fg-muted transition-colors duration-150 hover:border-accent/60 hover:text-accent sm:self-auto"
+          >
+            Back to top <ArrowUp className="size-3.5" aria-hidden="true" />
+          </a>
         </div>
       </Container>
+      {/* Decorative: a giant, faint wordmark fading into the bottom edge. */}
+      <p
+        aria-hidden="true"
+        className="pointer-events-none mt-6 -mb-[0.18em] text-center font-display text-[clamp(5rem,22vw,20rem)] leading-none tracking-[-0.05em] text-transparent select-none [-webkit-text-stroke:1px_rgb(228_168_83/0.22)] [mask-image:linear-gradient(to_bottom,#000_30%,transparent)]"
+      >
+        Marquee
+      </p>
     </footer>
   );
 }
