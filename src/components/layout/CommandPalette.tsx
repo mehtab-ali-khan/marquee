@@ -54,7 +54,7 @@ export function CommandPalette() {
       } catch {
         if (!controller.signal.aborted) setResponse({ query: trimmed, results: [], failed: true });
       }
-    }, 250);
+    }, 180); // wait for a short pause in typing (fewer requests, still feels instant)
 
     return () => {
       window.clearTimeout(timer);

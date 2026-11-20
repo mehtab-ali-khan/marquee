@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { Clapperboard } from "lucide-react";
@@ -18,6 +18,11 @@ export const CARD_IMAGE_SIZES = "(min-width: 1280px) 19vw, (min-width: 1024px) 2
 export function TitleCard({ item, eager = false }: { item: Omit<PreviewItem, "imageSizes">; eager?: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null);
   const { hoverStart, hoverEnd, closeNow } = usePreview();
+  // Prefetch on INTENT (from Next's prefetching guide): every card shares the
+  // cheap "App Shell" prefetch ("auto"); once you rest the mouse on a card or
+  // focus it, it fully prefetches (true), so the modal's data is usually
+  // already here when you click and it opens straight to the content.
+  const [intent, setIntent] = useState(false);
   const src = backdropUrl(item.backdropPath, "w780") ?? posterUrl(item.posterPath, "w500");
 
   return (
@@ -25,6 +30,8 @@ export function TitleCard({ item, eager = false }: { item: Omit<PreviewItem, "im
       <Link
         ref={ref}
         href={item.href}
+        prefetch={intent ? true : "auto"}
+        onFocus={() => setIntent(true)}
         // Don't jump to the top: the modal opens over the page right where you are.
         scroll={false}
         onClick={(event) => {
@@ -36,6 +43,7 @@ export function TitleCard({ item, eager = false }: { item: Omit<PreviewItem, "im
         className="title-card group relative block aspect-video overflow-hidden rounded-md bg-surface outline-offset-4"
         onPointerEnter={(event) => {
           if (event.pointerType === "mouse" && ref.current) {
+            setIntent(true);
             hoverStart({ ...item, imageSizes: CARD_IMAGE_SIZES }, ref.current);
           }
         }}

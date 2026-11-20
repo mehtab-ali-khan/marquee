@@ -29,7 +29,7 @@ function stepSlide(current: SlideState, direction: 1 | -1, length: number): Slid
 }
 
 // Time each featured movie stays on screen before the next one slides in.
-const ROTATION_MS = 5_000;
+const ROTATION_MS = 3_000;
 const motionQuery = "(prefers-reduced-motion: reduce)";
 
 function subscribeToMotion(callback: () => void) {

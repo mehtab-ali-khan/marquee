@@ -16,7 +16,8 @@ import { takeModalOrigin, type ModalOrigin } from "./modal-origin";
 //  - Close: animate back INTO the card first, THEN router.back() (URL → "/").
 //    The browser's Back button closes it too (Next unmounts the modal route).
 
-const OPEN_SPRING = { type: "spring", stiffness: 240, damping: 30, mass: 1 } as const;
+// Stiff + well damped: settles in ~350ms without bouncing (was ~600ms, felt slow).
+const OPEN_SPRING = { type: "spring", stiffness: 420, damping: 40, mass: 1 } as const;
 const CLOSE_EASE = [0.32, 0.72, 0, 1] as const;
 
 /** Transform that makes the panel exactly cover `target` (panel's transform-origin is top center). */
@@ -60,11 +61,13 @@ export function DetailModal({ label, children }: { label: string; children: Reac
     origin.current = takeModalOrigin(); // fresh each time (null = opened some other way)
     const scroller = panel.parentElement!; // the overlay (its ref isn't attached yet: parents attach after children)
 
-    if (backdropRef.current) animate(backdropRef.current, { opacity: [0, 1] }, { duration: 0.3 });
+    if (backdropRef.current) animate(backdropRef.current, { opacity: [0, 1] }, { duration: 0.2 });
     if (origin.current && !reduceMotion) {
       const from = coverRect(panel, scroller, origin.current.from);
       animate(panel, { x: [from.x, 0], y: [from.y, 0], scale: [from.scale, 1] }, OPEN_SPRING);
       animate(panel, { opacity: [0, 1] }, { duration: 0.18 });
+    } else if (reduceMotion) {
+      animate(panel, { opacity: [0, 1] }, { duration: 0.2 }); // fade only: no movement
     } else {
       animate(panel, { opacity: [0, 1], y: [12, 0], scale: [0.98, 1] }, { duration: 0.28, ease: CLOSE_EASE });
     }
@@ -82,16 +85,21 @@ export function DetailModal({ label, children }: { label: string; children: Reac
     const cardVisible = card && card.width > 0 && card.bottom > 0 && card.top < window.innerHeight;
 
     // animate() returns controls; `.finished` is a Promise that resolves when it ends.
-    const steps: Promise<unknown>[] = [animate(backdropRef.current!, { opacity: 0 }, { duration: 0.3 }).finished];
+    const steps: Promise<unknown>[] = [animate(backdropRef.current!, { opacity: 0 }, { duration: 0.22 }).finished];
     if (panel && scroller && cardVisible && !reduceMotion) {
       const to = coverRect(panel, scroller, card);
-      steps.push(animate(panel, { x: to.x, y: to.y, scale: to.scale }, { duration: 0.42, ease: CLOSE_EASE }).finished);
-      steps.push(animate(panel, { opacity: 0 }, { duration: 0.16, delay: 0.28 }).finished);
+      steps.push(animate(panel, { x: to.x, y: to.y, scale: to.scale }, { duration: 0.3, ease: CLOSE_EASE }).finished);
+      steps.push(animate(panel, { opacity: 0 }, { duration: 0.12, delay: 0.18 }).finished);
     } else if (panel) {
-      steps.push(animate(panel, { opacity: 0, scale: 0.98 }, { duration: 0.18 }).finished);
+      // Reduced motion: fade only. Otherwise a small shrink as it fades.
+      steps.push(animate(panel, reduceMotion ? { opacity: 0 } : { opacity: 0, scale: 0.98 }, { duration: 0.18 }).finished);
     }
     await Promise.all(steps);
     router.back();
+    // Put keyboard focus back on the card the user opened (Radix can't: a link,
+    // not a dialog button, opened this modal). Next frame = after the dialog
+    // has released its focus trap.
+    if (returnTo?.isConnected) requestAnimationFrame(() => returnTo.focus({ preventScroll: true }));
   }
 
   return (
@@ -110,15 +118,21 @@ export function DetailModal({ label, children }: { label: string; children: Reac
             }}
             tabIndex={-1}
             style={{ opacity: 0, transformOrigin: "50% 0" }}
-            className="relative mx-auto my-4 w-[min(920px,calc(100vw-1rem))] overflow-hidden rounded-xl bg-surface shadow-[0_24px_80px_-12px_rgb(0_0_0/0.9)] outline-none sm:my-8 sm:w-[min(920px,calc(100vw-2rem))]"
+            // overflow-clip (not overflow-hidden): rounds the corners the same way, but
+            // doesn't create a scroll container, so the sticky ✕ below can stick.
+            className="relative mx-auto my-4 w-[min(920px,calc(100vw-1rem))] overflow-clip rounded-xl bg-surface shadow-[0_24px_80px_-12px_rgb(0_0_0/0.9)] outline-none sm:my-8 sm:w-[min(920px,calc(100vw-2rem))]"
           >
             <Dialog.Title className="sr-only">{label}</Dialog.Title>
-            <Dialog.Close
-              aria-label="Close"
-              className="absolute top-3 right-3 z-20 grid size-10 place-items-center rounded-full bg-black/65 text-fg backdrop-blur-sm transition-colors duration-150 hover:bg-black/85"
-            >
-              <X className="size-5" aria-hidden="true" />
-            </Dialog.Close>
+            {/* A zero-height sticky strip: the ✕ stays in the top corner while you
+                scroll a long modal (on phones there's no Escape key). */}
+            <div className="pointer-events-none sticky top-0 z-20 h-0">
+              <Dialog.Close
+                aria-label="Close"
+                className="pointer-events-auto absolute top-3 right-3 grid size-10 place-items-center rounded-full bg-black/65 text-fg backdrop-blur-sm transition-colors duration-150 hover:bg-black/85"
+              >
+                <X className="size-5" aria-hidden="true" />
+              </Dialog.Close>
+            </div>
             {children}
           </Dialog.Content>
         </Dialog.Overlay>

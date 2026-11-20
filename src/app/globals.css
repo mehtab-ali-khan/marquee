@@ -288,11 +288,11 @@ body:has(.screening-home) .marquee-site-header[data-scrolled="false"] {
 }
 
 .marquee-search-dialog[data-state="open"] {
-  animation: marquee-search-in 640ms cubic-bezier(0.24, 0.7, 0.2, 1) both;
+  animation: marquee-search-in 340ms cubic-bezier(0.22, 0.8, 0.25, 1) both; /* 640ms felt sluggish */
 }
 
 .marquee-search-dialog[data-state="closed"] {
-  animation: marquee-search-out 260ms ease-in both;
+  animation: marquee-search-out 170ms ease-in both;
 }
 
 @keyframes marquee-search-in {
@@ -356,7 +356,9 @@ body:has(.screening-home) .marquee-site-header[data-scrolled="false"] {
   margin-inline: -1rem;
   padding-inline: 1rem;
   scroll-padding-inline: 1rem;
-  padding-block: 0.25rem;
+  /* Room for the keyboard focus ring (3px outline + 4px offset): a scrolling
+     row clips anything outside its box, so 4px cut the ring off. */
+  padding-block: 0.5rem;
 }
 .title-row::-webkit-scrollbar { display: none; }
 .title-row > li { scroll-snap-align: start; min-width: 0; }
@@ -380,4 +382,9 @@ body:has(.screening-home) .marquee-site-header[data-scrolled="false"] {
 @keyframes ken-burns {
   from { transform: scale(1); }
   to { transform: scale(1.1) translate(-1.5%, 1%); }
+}
+/* The global reduced-motion rule shortens animations, which would make this
+   one JUMP to its end (a zoomed, cropped still). Switch it off entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .ken-burns { animation: none; }
 }
