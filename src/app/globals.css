@@ -476,3 +476,24 @@ body:has(.screening-home) .marquee-site-header[data-scrolled="false"] {
   .login-wall-column,
   .login-strip { animation: none; }
 }
+/* Tablets: the menu is a drawer, so it slides in from the right edge. */
+@media (min-width: 40rem) {
+  .mobile-sheet[data-state="open"] {
+    animation: mobile-drawer-in 320ms var(--ease-out-soft);
+  }
+  .mobile-sheet[data-state="closed"] {
+    animation: mobile-drawer-out 200ms ease-in forwards;
+  }
+}
+.mobile-sheet-overlay[data-state="open"] {
+  animation: mobile-sheet-in 260ms ease-out;
+}
+.mobile-sheet-overlay[data-state="closed"] {
+  animation: mobile-sheet-out 200ms ease-in forwards;
+}
+@keyframes mobile-drawer-in {
+  from { transform: translateX(100%); }
+}
+@keyframes mobile-drawer-out {
+  to { transform: translateX(100%); }
+}

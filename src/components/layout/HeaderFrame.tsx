@@ -4,9 +4,8 @@ import { Suspense, useEffect, useState, type ReactNode } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
-import { ArrowRight, Menu, Search, X } from "lucide-react";
+import { ArrowRight, Menu, X } from "lucide-react";
 import { Logo } from "@/components/ui/Logo";
-import { Container } from "@/components/ui/Container";
 import { cn } from "@/lib/utils";
 
 export function HeaderFrame({ children }: { children: ReactNode }) {
@@ -29,8 +28,10 @@ export function HeaderFrame({ children }: { children: ReactNode }) {
 type NavItem = { href: string; label: string };
 
 /**
- * Phones and tablets: a full-screen menu instead of a tiny dropdown.
- * Big serif links (easy thumb targets), search, and the account section.
+ * Below desktop width, the nav lives in a menu:
+ * - phones: full screen (nothing else would fit anyway);
+ * - tablets / small laptops: a drawer sliding in from the right over the dimmed
+ *   page, so the menu never stretches across a wide, mostly empty screen.
  * Radix Dialog gives us focus trapping, Escape to close, and scroll locking.
  * `account` is rendered on the server (it reads the session) and passed in.
  */
@@ -47,6 +48,8 @@ export function MobileNav({ items, account }: { items: NavItem[]; account: React
       </Dialog.Trigger>
 
       <Dialog.Portal>
+        {/* The dimmed page behind the drawer (tablets); tapping it closes the menu. */}
+        <Dialog.Overlay className="mobile-sheet-overlay fixed inset-0 z-50 bg-black/60 backdrop-blur-[2px] lg:hidden" />
         <Dialog.Content
           aria-describedby={undefined}
           // Any link tapped inside the menu (including the server-rendered
@@ -54,11 +57,10 @@ export function MobileNav({ items, account }: { items: NavItem[]; account: React
           onClickCapture={(event) => {
             if ((event.target as HTMLElement).closest("a")) setOpen(false);
           }}
-          className="mobile-sheet fixed inset-0 z-50 flex flex-col bg-canvas lg:hidden"
+          className="mobile-sheet fixed inset-y-0 right-0 z-50 flex w-full flex-col bg-canvas shadow-[-24px_0_60px_-20px_rgb(0_0_0/0.8)] sm:w-[24rem] sm:border-l sm:border-line lg:hidden"
         >
           <Dialog.Title className="sr-only">Menu</Dialog.Title>
-          {/* Same height and logo position as the header, so opening feels like the header unfolding. */}
-          <Container className="flex h-[var(--marquee-header-height)] shrink-0 items-center justify-between border-b border-line">
+          <div className="flex h-[var(--marquee-header-height)] shrink-0 items-center justify-between border-b border-line px-4 sm:px-6">
             <Link href="/" aria-label="Marquee home">
               <Logo />
             </Link>
@@ -68,33 +70,20 @@ export function MobileNav({ items, account }: { items: NavItem[]; account: React
             >
               <X className="size-4" aria-hidden="true" />
             </Dialog.Close>
-          </Container>
+          </div>
 
-          <div className="flex-1 overflow-y-auto overscroll-contain">
-            <Container className="flex min-h-full flex-col py-6">
-              {/* Capped width on tablets, but left-aligned with the logo above. */}
-              <div className="flex w-full max-w-lg flex-1 flex-col">
-              <Link
-                href="/search"
-                className="mobile-sheet-item flex h-11 items-center gap-3 rounded-full border border-line bg-surface px-4 text-sm text-fg-subtle"
-                style={{ "--i": 0 } as React.CSSProperties}
-              >
-                <Search className="size-4 text-accent" aria-hidden="true" />
-                Search films, series, people…
-              </Link>
+          <div className="flex flex-1 flex-col overflow-y-auto overscroll-contain px-4 py-6 sm:px-6">
+            {/* No search field here: the header keeps its search button right beside the menu button. */}
+            <nav aria-label="Main">
+              <Suspense fallback={<SheetLinks items={items} active={-1} />}>
+                <ActiveSheetLinks items={items} />
+              </Suspense>
+            </nav>
 
-              <nav aria-label="Main" className="mt-6">
-                <Suspense fallback={<SheetLinks items={items} active={-1} />}>
-                  <ActiveSheetLinks items={items} />
-                </Suspense>
-              </nav>
-
-              <div className="mobile-sheet-item mt-10" style={{ "--i": items.length + 1 } as React.CSSProperties}>
-                {account}
-                <p className="mt-6 text-center text-xs text-fg-subtle">Film and TV data from TMDB.</p>
-              </div>
-              </div>
-            </Container>
+            <div className="mobile-sheet-item mt-8" style={{ "--i": items.length + 1 } as React.CSSProperties}>
+              {account}
+            </div>
+            <p className="mt-auto pt-8 text-center text-xs text-fg-subtle">Film and TV data from TMDB.</p>
           </div>
         </Dialog.Content>
       </Dialog.Portal>
