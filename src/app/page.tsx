@@ -5,8 +5,9 @@ import { Hero, type FeaturedTitle } from "@/components/media/Hero";
 import { HeroSkeleton } from "@/components/media/MediaSkeletons";
 import { buttonStyles } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
-import { ScreeningCard, ScreeningCardSkeleton } from "@/features/home/ScreeningCard";
-import { ScreeningRail } from "@/features/home/ScreeningRail";
+import { PreviewLayer } from "@/features/home/PreviewLayer";
+import { TitleCard } from "@/features/home/TitleCard";
+import { TitleRow, TitleRowSkeleton } from "@/features/home/TitleRow";
 import { getNowPlayingMovies, getTopRatedMovies, getUpcomingMovies } from "@/lib/tmdb/movies";
 import { getTrendingMovies } from "@/lib/tmdb/trending";
 import { getPopularTv, getTopRatedTv } from "@/lib/tmdb/tv";
@@ -40,53 +41,49 @@ async function TrendingHero() {
 }
 
 const rails = [
-  { title: "Trending this week", format: "still", load: () => getTrendingMovies("week") },
-  { title: "Now in theaters", format: "poster", load: () => getNowPlayingMovies() },
-  { title: "Popular on TV", format: "still", load: () => getPopularTv() },
-  { title: "Top rated films", format: "poster", load: () => getTopRatedMovies() },
-  { title: "Top rated series", format: "poster", load: () => getTopRatedTv() },
-  { title: "Coming soon", format: "poster", load: () => getUpcomingMovies() },
-] as const;
+  { title: "Trending this week", load: () => getTrendingMovies("week") },
+  { title: "Now in theaters", load: () => getNowPlayingMovies() },
+  { title: "Popular on TV", load: () => getPopularTv() },
+  { title: "Top rated films", load: () => getTopRatedMovies() },
+  { title: "Top rated series", load: () => getTopRatedTv() },
+  { title: "Coming soon", load: () => getUpcomingMovies() },
+];
 
 type HomeRail = {
   title: string;
-  format: "still" | "poster";
   load: () => Promise<Paginated<MovieSummary> | Paginated<TvSummary>>;
 };
 
-async function HomeTitles({ rail }: { rail: HomeRail }) {
+// Server Component: fetches its row (cached) and turns TMDB objects into the
+// small, flat props the client cards need.
+async function HomeTitles({ rail, eager }: { rail: HomeRail; eager: boolean }) {
   const { results } = await rail.load();
   if (!results.length) return null;
 
   return (
-    <ScreeningRail title={rail.title} format={rail.format}>
-      {results.map((item) => {
+    <TitleRow title={rail.title}>
+      {results.map((item, index) => {
         const movie = "title" in item;
+        const type = movie ? "movie" : "tv";
         return (
-          <ScreeningCard
+          <TitleCard
             key={item.id}
-            format={rail.format}
-            title={movie ? item.title : item.name}
-            href={`/${movie ? "movie" : "tv"}/${item.id}`}
-            year={(movie ? item.release_date : item.first_air_date)?.slice(0, 4)}
-            rating={item.vote_average}
-            overview={item.overview}
-            posterPath={item.poster_path}
-            backdropPath={item.backdrop_path}
+            eager={eager && index < 5}
+            item={{
+              key: `${type}-${item.id}`,
+              type,
+              id: item.id,
+              href: `/${type}/${item.id}`,
+              title: movie ? item.title : item.name,
+              backdropPath: item.backdrop_path,
+              posterPath: item.poster_path,
+              year: (movie ? item.release_date : item.first_air_date)?.slice(0, 4),
+              rating: item.vote_average,
+            }}
           />
         );
       })}
-    </ScreeningRail>
-  );
-}
-
-function HomeRailSkeleton({ rail }: { rail: HomeRail }) {
-  return (
-    <ScreeningRail title={rail.title} format={rail.format} loading>
-      {Array.from({ length: rail.format === "still" ? 4 : 8 }, (_, index) => (
-        <ScreeningCardSkeleton key={index} />
-      ))}
-    </ScreeningRail>
+    </TitleRow>
   );
 }
 
@@ -97,13 +94,16 @@ export default function Home() {
         <TrendingHero />
       </Suspense>
 
-      <div className="space-y-2 pb-3 sm:space-y-4 sm:pb-8">
-        {rails.map((rail) => (
-          <Suspense key={rail.title} fallback={<HomeRailSkeleton rail={rail} />}>
-            <HomeTitles rail={rail} />
-          </Suspense>
-        ))}
-      </div>
+      {/* PreviewLayer: the hover-preview "brain" + portal for every row inside it. */}
+      <PreviewLayer>
+        <div className="pb-3 sm:pb-8">
+          {rails.map((rail, index) => (
+            <Suspense key={rail.title} fallback={<TitleRowSkeleton title={rail.title} />}>
+              <HomeTitles rail={rail} eager={index === 0} />
+            </Suspense>
+          ))}
+        </div>
+      </PreviewLayer>
     </main>
   );
 }

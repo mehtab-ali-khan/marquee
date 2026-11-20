@@ -16,15 +16,29 @@ import { buttonStyles } from "@/components/ui/Button";
 type TrailerButtonProps = {
   youtubeKey: string; // the video id, e.g. "BdJKm16Co6M"
   title: string; // movie title, for the dialog label
+  /** "button" = "▶ Watch trailer" (detail pages); "icon" = round ▶ (hover previews). */
+  variant?: "button" | "icon";
+  /** Lets a parent react to the trailer opening/closing (the preview stays open meanwhile). */
+  onOpenChange?: (open: boolean) => void;
 };
 
-export function TrailerButton({ youtubeKey, title }: TrailerButtonProps) {
+export function TrailerButton({ youtubeKey, title, variant = "button", onOpenChange }: TrailerButtonProps) {
   return (
     // Dialog.Root keeps the open/closed state for us (like a built-in useState).
-    <Dialog.Root>
-      <Dialog.Trigger className={buttonStyles({ className: "h-11 rounded-md px-4" })}>
-        <Play className="fill-current" /> Watch trailer
-      </Dialog.Trigger>
+    <Dialog.Root onOpenChange={onOpenChange}>
+      {variant === "icon" ? (
+        <Dialog.Trigger
+          aria-label={`Play trailer for ${title}`}
+          title="Play trailer"
+          className="grid size-10 place-items-center rounded-full bg-fg text-canvas transition-transform duration-150 hover:scale-105 active:scale-95"
+        >
+          <Play className="size-4 translate-x-px fill-current" aria-hidden="true" />
+        </Dialog.Trigger>
+      ) : (
+        <Dialog.Trigger className={buttonStyles({ className: "h-11 rounded-md px-4" })}>
+          <Play className="fill-current" /> Watch trailer
+        </Dialog.Trigger>
+      )}
 
       {/* Portal: renders the modal at the end of <body>, above everything else. */}
       <Dialog.Portal>
