@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Star } from "lucide-react";
 import { backdropUrl, profileUrl } from "@/lib/tmdb/images";
+import { HeadshotStrip } from "./HeadshotStrip";
 import type { Person, Program } from "./program";
 
 // The building blocks of the "Festival Program" detail page.
@@ -161,13 +162,14 @@ export function CreditsRoll({ cast, crew }: { cast: Program["cast"]; crew: Progr
 
 /**
  * Cast as a strip of program-style headshots: black and white, turning to
- * color on hover or keyboard focus. Each one opens the person's page.
+ * color on hover or keyboard focus (touch screens: as it swipes fully into view,
+ * see HeadshotStrip). Each one opens the person's page.
  * Scrolls sideways (swipe / trackpad) when there are more than fit.
  */
 function Headshots({ cast }: { cast: Program["cast"] }) {
   return (
     // scroll-px-*: snap cards to the page gutter, not to the row's outer edge (which cut the first one off).
-    <ul className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 scrollbar-none md:-mx-6 md:scroll-px-6 md:px-6 lg:-mx-12 lg:scroll-px-12 lg:px-12">
+    <HeadshotStrip className="-mx-4 flex snap-x scroll-px-4 gap-4 overflow-x-auto px-4 pb-2 scrollbar-none md:-mx-6 md:scroll-px-6 md:px-6 lg:-mx-12 lg:scroll-px-12 lg:px-12">
       {cast.map((person) => {
         const photo = profileUrl(person.profilePath, "w185");
         return (
@@ -180,7 +182,7 @@ function Headshots({ cast }: { cast: Program["cast"] }) {
                     alt={`Photo of ${person.name}`}
                     fill
                     sizes="144px"
-                    className="object-cover grayscale transition-[filter,transform] duration-500 ease-out-soft group-hover:scale-[1.04] group-hover:grayscale-0 group-focus-visible:grayscale-0"
+                    className="object-cover grayscale transition-[filter,transform] duration-500 ease-out-soft group-hover:scale-[1.04] group-hover:grayscale-0 group-focus-visible:grayscale-0 in-data-[inview=true]:grayscale-0"
                   />
                 ) : (
                   <span className="grid size-full place-items-center font-display text-3xl text-fg-subtle" aria-hidden="true">
@@ -196,7 +198,7 @@ function Headshots({ cast }: { cast: Program["cast"] }) {
           </li>
         );
       })}
-    </ul>
+    </HeadshotStrip>
   );
 }
 

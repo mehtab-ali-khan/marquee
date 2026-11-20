@@ -1,8 +1,9 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUp, ArrowUpRight, Search } from "lucide-react";
+import { ArrowRight, ArrowUpRight, Search } from "lucide-react";
 import { buttonStyles } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 import { LogoMark } from "@/components/ui/Logo";
+import { BackToTop } from "./BackToTop";
 
 // The footer as the program's CLOSING CREDITS (same visual language as the
 // detail pages): a closing line, the site's links as an end-credits roll with
@@ -113,18 +114,13 @@ export function Footer() {
           <p className="col-span-3 row-start-2 sm:col-span-1 sm:col-start-2 sm:row-start-1">
             This product uses the TMDB API but is not endorsed or certified by TMDB.
           </p>
-          <a
-            href="#top"
-            className="col-start-3 row-start-1 inline-flex min-h-9 items-center gap-2 justify-self-end rounded-full border border-line px-3.5 text-fg-muted transition-colors duration-150 hover:border-accent/60 hover:text-accent"
-          >
-            Back to top <ArrowUp className="size-3.5" aria-hidden="true" />
-          </a>
+          <BackToTop className="col-start-3 row-start-1 inline-flex min-h-9 items-center gap-2 justify-self-end rounded-full border border-line px-3.5 text-fg-muted transition-colors duration-150 hover:border-accent/60 hover:text-accent" />
         </div>
       </Container>
       {/* Decorative: a giant, faint wordmark fading into the bottom edge. */}
       <p
         aria-hidden="true"
-        className="pointer-events-none mt-6 -mb-[0.18em] text-center font-display text-[clamp(5rem,22vw,20rem)] leading-none tracking-[-0.05em] text-transparent select-none [-webkit-text-stroke:1px_rgb(228_168_83/0.22)] [mask-image:linear-gradient(to_bottom,#000_30%,transparent)]"
+        className="pointer-events-none mt-6 -mb-[0.18em] text-center font-display text-[clamp(5rem,22vw,20rem)] leading-none tracking-[-0.05em] text-transparent select-none [-webkit-text-stroke:1px_rgb(228_168_83/0.45)] [mask-image:linear-gradient(to_bottom,#000_45%,transparent)]"
       >
         Marquee
       </p>

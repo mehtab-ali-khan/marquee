@@ -148,9 +148,11 @@ export function Hero({ slides }: { slides: [FeaturedTitle, ...FeaturedTitle[]] }
               In the spotlight
             </p>
             <h2
-              // pb-[0.14em]: line-clamp hides overflow, and with this tight line height the
-              // tails of g/y/p fall outside the box and got clipped. The padding makes room.
-              className="mt-4 line-clamp-2 pb-[0.14em] font-display text-[clamp(2.5rem,6.6vw,6.25rem)] leading-[0.96] tracking-[-0.04em] text-fg"
+              // line-clamp hides everything past line 2. pb-[0.1em] makes room for the tails of
+              // g/y/p on line 2. The line height (1.06) is the tightest at which that padding does
+              // NOT also reveal the tops of the hidden third line (at 0.96, long titles showed
+              // stray letter tips under the "…").
+              className="mt-4 line-clamp-2 pb-[0.1em] font-display text-[clamp(2.5rem,6.6vw,6.25rem)] leading-[1.06] tracking-[-0.04em] text-fg"
             >
               {active.title}
             </h2>
