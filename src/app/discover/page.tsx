@@ -3,13 +3,13 @@ import { Suspense } from "react";
 import { MediaCardSkeleton } from "@/components/media/MediaSkeletons";
 import { Container } from "@/components/ui/Container";
 import { PageHeader } from "@/components/ui/PageHeader";
-import { FilterPanel } from "@/features/discover/FilterPanel";
+import { DiscoverProvider, FilterDeck, PendingArea } from "@/features/discover/DiscoverControls";
 import { InfiniteGrid } from "@/features/discover/InfiniteGrid";
 import { discover, getGenres } from "@/lib/tmdb/discover";
-import { decadeLabel, parseDiscoverParams, toDiscoverQuery } from "@/lib/tmdb/discover-params";
+import { parseDiscoverParams, toDiscoverQuery } from "@/lib/tmdb/discover-params";
 
 // /discover?type=tv&genre=18&decade=2000&rating=8&sort=top
-// A "utility" layout: sticky filters on the left, a dense poster grid on the right.
+// A control deck of one-tap filters on top, a full-width poster grid below.
 
 export const metadata: Metadata = {
   title: "Discover",
@@ -43,58 +43,33 @@ async function DiscoverContent({ raw }: { raw: Record<string, string | string[] 
   const filters = { type, genre, decade, rating, sort };
   const query = toDiscoverQuery(filters);
 
-  // Both requests start at the same time, not one after the other.
-  const [genres, firstPage] = await Promise.all([getGenres(filters.type), discover(filters, 1)]);
-
-  const genreName = genres.find((g) => g.id === filters.genre)?.name;
-  const summary = [
-    genreName,
-    filters.type === "tv" ? "TV shows" : "movies",
-    filters.decade && `from the ${decadeLabel(filters.decade).toLowerCase()}`,
-    filters.rating && `rated ${filters.rating}+`,
-  ]
-    .filter(Boolean)
-    .join(" ");
+  // All three requests start at the same time. Both genre lists are loaded (cached
+  // for weeks) so switching Films ⇄ Series shows the right genre chips instantly.
+  const [movieGenres, tvGenres, firstPage] = await Promise.all([getGenres("movie"), getGenres("tv"), discover(filters, 1)]);
 
   return (
-    <div className="mt-10 grid gap-10 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-12">
-      <aside className="lg:sticky lg:top-24 lg:self-start">
-        {/* key={query}: when the URL changes (e.g. back button), rebuild the form
-            so its dropdowns show the URL's values, not the old selection. */}
-        <FilterPanel key={query} filters={filters} genres={genres} />
-      </aside>
-
-      <section aria-label="Results">
-        <p className="mb-6 text-sm text-fg-subtle tabular-nums">
-          {/* TMDB caps its total at ~10,000+ for broad filters, so we don't pretend to be exact. */}
-          {firstPage.totalResults >= 10_000 ? "10,000+" : firstPage.totalResults.toLocaleString("en-US")}{" "}
-          <span className="text-fg-muted">{summary}</span>
-        </p>
-        {/* key={query}: new filters = a fresh grid that starts again at page 1. */}
-        <InfiniteGrid
-          key={query}
-          query={query}
-          initialItems={firstPage.items}
-          totalPages={firstPage.totalPages}
-        />
+    <DiscoverProvider filters={filters}>
+      <FilterDeck genres={{ movie: movieGenres, tv: tvGenres }} totalResults={firstPage.totalResults} />
+      <section aria-label="Results" className="mt-8">
+        <PendingArea>
+          {/* key={query}: new filters = a fresh grid that starts again at page 1. */}
+          <InfiniteGrid key={query} query={query} initialItems={firstPage.items} totalPages={firstPage.totalPages} />
+        </PendingArea>
       </section>
-    </div>
+    </DiscoverProvider>
   );
 }
 
 function DiscoverSkeleton() {
   return (
-    <div className="mt-10 grid gap-10 lg:grid-cols-[15rem_minmax(0,1fr)] lg:gap-12">
-      <div className="space-y-5">
-        {Array.from({ length: 5 }, (_, i) => (
-          <div key={i} className="h-16 rounded-sm bg-surface" />
-        ))}
-      </div>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-5">
-        {Array.from({ length: 10 }, (_, i) => (
+    <>
+      <div className="mt-12 h-[13.5rem] rounded-lg border border-line bg-surface/50" />
+      <div className="mt-8 h-9 w-72 rounded-sm bg-surface" />
+      <div className="mt-8 grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
+        {Array.from({ length: 12 }, (_, i) => (
           <MediaCardSkeleton key={i} />
         ))}
       </div>
-    </div>
+    </>
   );
 }

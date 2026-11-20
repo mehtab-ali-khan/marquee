@@ -3,7 +3,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Loader2 } from "lucide-react";
 import { MediaCard } from "@/components/media/MediaCard";
-import { Button } from "@/components/ui/Button";
+import Link from "next/link";
+import { Button, buttonStyles } from "@/components/ui/Button";
 import type { CardData } from "@/lib/tmdb/cards";
 
 // A poster grid that loads more titles as you scroll near the bottom.
@@ -66,12 +67,20 @@ export function InfiniteGrid({ initialItems, totalPages, query }: InfiniteGridPr
   }, [hasMore, status, page]);
 
   if (items.length === 0) {
-    return <p className="py-16 text-fg-muted">No titles match these filters. Try widening them.</p>;
+    return (
+      <div className="mx-auto max-w-md py-20 text-center">
+        <p className="font-display text-3xl">Nothing on the program.</p>
+        <p className="mt-3 text-fg-muted">No titles match all of these filters. Try a wider era or a lower rating.</p>
+        <Link href="/discover" className={buttonStyles({ variant: "secondary", className: "mt-6 rounded-full" })}>
+          Clear all filters
+        </Link>
+      </div>
+    );
   }
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6">
         {items.map(({ key, ...card }, index) => (
           // The first row is on screen right away: load those posters immediately
           // (Next warned that the biggest visible image was being lazy-loaded).
