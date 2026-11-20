@@ -2,6 +2,7 @@ import Link from "next/link";
 import { ArrowRight, ArrowUp, ArrowUpRight, Search } from "lucide-react";
 import { buttonStyles } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
+import { LogoMark } from "@/components/ui/Logo";
 
 // The footer as the program's CLOSING CREDITS (same visual language as the
 // detail pages): a closing line, the site's links as an end-credits roll with
@@ -51,11 +52,22 @@ export function Footer() {
               <span className="block">Thousands more films and series are waiting.</span>
               <span className="block">Find your next one.</span>
             </p>
-            <div className="flex flex-wrap gap-3">
-              <Link href="/discover" className={buttonStyles({ size: "lg", className: "rounded-full" })}>
-                Discover something new <ArrowRight aria-hidden="true" />
+            {/* Always one line: on narrow screens the buttons get more compact and the
+                label shortens to "Discover"; the full label returns from sm up. */}
+            <div className="flex gap-2.5 sm:gap-3">
+              <Link
+                href="/discover"
+                aria-label="Discover something new"
+                className={buttonStyles({ size: "lg", className: "h-11 rounded-full px-5 text-sm sm:h-12 sm:px-6 sm:text-base" })}
+              >
+                <span className="sm:hidden">Discover</span>
+                <span className="hidden sm:inline">Discover something new</span>
+                <ArrowRight aria-hidden="true" />
               </Link>
-              <Link href="/search" className={buttonStyles({ variant: "secondary", size: "lg", className: "rounded-full" })}>
+              <Link
+                href="/search"
+                className={buttonStyles({ variant: "secondary", size: "lg", className: "h-11 rounded-full px-5 text-sm sm:h-12 sm:px-6 sm:text-base" })}
+              >
                 <Search aria-hidden="true" /> Search
               </Link>
             </div>
@@ -94,11 +106,16 @@ export function Footer() {
         </dl>
 
         {/* 3. The final title card */}
-        <div className="mt-14 flex flex-col gap-3 border-t border-line pt-5 text-xs leading-relaxed text-fg-subtle sm:flex-row sm:items-center sm:justify-between sm:gap-6">
-          <p>This product uses the TMDB API but is not endorsed or certified by TMDB.</p>
+        {/* A 3-column grid. Phones: logo and "Back to top" share the first line,
+            the notice runs full width below. sm and up: all three in one row. */}
+        <div className="mt-14 grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-x-5 gap-y-4 border-t border-line pt-6 text-xs leading-relaxed text-fg-subtle">
+          <LogoMark className="h-5 opacity-80" />
+          <p className="col-span-3 row-start-2 sm:col-span-1 sm:col-start-2 sm:row-start-1">
+            This product uses the TMDB API but is not endorsed or certified by TMDB.
+          </p>
           <a
             href="#top"
-            className="inline-flex min-h-9 shrink-0 items-center gap-2 self-start rounded-full border border-line px-3.5 text-fg-muted transition-colors duration-150 hover:border-accent/60 hover:text-accent sm:self-auto"
+            className="col-start-3 row-start-1 inline-flex min-h-9 items-center gap-2 justify-self-end rounded-full border border-line px-3.5 text-fg-muted transition-colors duration-150 hover:border-accent/60 hover:text-accent"
           >
             Back to top <ArrowUp className="size-3.5" aria-hidden="true" />
           </a>

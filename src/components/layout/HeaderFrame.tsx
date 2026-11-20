@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { ArrowRight, Menu, Search, X } from "lucide-react";
+import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
 import { cn } from "@/lib/utils";
 
@@ -58,11 +59,8 @@ export function MobileNav({ items, account }: { items: NavItem[]; account: React
           <Dialog.Title className="sr-only">Menu</Dialog.Title>
           {/* Same height and logo position as the header, so opening feels like the header unfolding. */}
           <Container className="flex h-[var(--marquee-header-height)] shrink-0 items-center justify-between border-b border-line">
-            <Link href="/" className="flex items-center gap-1.5">
-              <span className="grid size-5 place-items-center rounded-[5px] border border-accent/45 sm:size-7" aria-hidden="true">
-                <span className="size-1.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)]" />
-              </span>
-              <span className="font-display text-[1.2rem] tracking-[-0.04em] sm:text-xl">Marquee</span>
+            <Link href="/" aria-label="Marquee home">
+              <Logo />
             </Link>
             <Dialog.Close
               aria-label="Close menu"

@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { Logo } from "@/components/ui/Logo";
 import { Container } from "@/components/ui/Container";
 import { CommandPalette } from "./CommandPalette";
 import { HeaderFrame, MobileNav } from "./HeaderFrame";
@@ -20,11 +21,8 @@ export function Header() {
           the search shrinks to an icon or a short field next to the menu button. */}
       <Container className="flex h-full items-center gap-2 sm:gap-3 lg:gap-8">
         <div className="flex shrink-0 items-center gap-6 xl:gap-8">
-          <Link href="/" aria-label="Marquee home" className="group flex w-fit shrink-0 items-center gap-1.5 rounded-sm sm:gap-2">
-            <span className="grid size-5 place-items-center rounded-[5px] border border-accent/45 bg-canvas/60 sm:size-7" aria-hidden="true">
-              <span className="size-1.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)] transition-transform group-hover:scale-125" />
-            </span>
-            <span className="font-display text-[1.2rem] tracking-[-0.04em] sm:text-xl">Marquee</span>
+          <Link href="/" aria-label="Marquee home" className="shrink-0 rounded-sm transition-opacity hover:opacity-85">
+            <Logo />
           </Link>
           <DesktopNav items={navItems} />
         </div>
