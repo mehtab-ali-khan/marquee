@@ -1,9 +1,11 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { DynamicMarker } from "@/components/DynamicMarker";
+import { EpisodesSection, EpisodesSectionSkeleton } from "@/components/media/EpisodesSection";
 import { TitleSheet, tvSheet } from "@/features/home/TitleSheet";
 import { getTvShow } from "@/lib/tmdb/tv";
 
 // INTERCEPTED route for shows: /tv/1396 opened from the home page.
-// (The episode list is added here in the next phase.)
 
 async function load(idParam: string) {
   const id = Number(idParam);
@@ -18,5 +20,16 @@ export async function generateMetadata({ params }: PageProps<"/tv/[id]">): Promi
 export default async function TvModal({ params }: PageProps<"/tv/[id]">) {
   const show = await load((await params).id);
   if (!show) return <p className="p-10 text-fg-muted">This title couldn’t be found.</p>;
-  return <TitleSheet sheet={tvSheet(show)} />;
+  return (
+    <>
+      <TitleSheet sheet={tvSheet(show)}>
+        {/* The season's episodes stream in on their own, after the rest of the modal. */}
+        <Suspense fallback={<EpisodesSectionSkeleton />}>
+          <EpisodesSection show={show} />
+        </Suspense>
+      </TitleSheet>
+      {/* Lets generateMetadata (which reads params) stream instead of blocking prefetch. */}
+      <DynamicMarker />
+    </>
+  );
 }

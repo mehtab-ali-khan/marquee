@@ -5,7 +5,7 @@ import { notFound } from "next/navigation";
 import { DetailHeader } from "@/components/media/DetailHeader";
 import { MediaRail } from "@/components/media/MediaRail";
 import { PersonCard } from "@/components/media/PersonCard";
-import { SeasonCard } from "@/components/media/SeasonCard";
+import { EpisodesSection, EpisodesSectionSkeleton } from "@/components/media/EpisodesSection";
 import { TvCard } from "@/components/media/TitleCards";
 import { TrailerButton } from "@/components/media/TrailerButton";
 import { WatchProviders } from "@/components/media/WatchProviders";
@@ -46,8 +46,6 @@ export default async function TvPage({ params }: PageProps<"/tv/[id]">) {
   const cast = show.credits.cast.slice(0, 20);
   const trailer = pickTrailer(show.videos.results);
   const recommendations = show.recommendations.results;
-  // Season 0 is "Specials" (extras), not a real season, so we leave it out.
-  const seasons = show.seasons.filter((season) => season.season_number > 0);
 
   return (
     <main className="pb-16">
@@ -91,22 +89,12 @@ export default async function TvPage({ params }: PageProps<"/tv/[id]">) {
         </div>
       </Container>
 
-      {/* The one TV-only section. */}
-      {seasons.length > 0 && (
-        <div className="mt-8">
-          <MediaRail title="Seasons">
-            {seasons.map((season) => (
-              <SeasonCard
-                key={season.id}
-                name={season.name}
-                posterPath={season.poster_path}
-                episodeCount={season.episode_count}
-                airDate={season.air_date}
-              />
-            ))}
-          </MediaRail>
-        </div>
-      )}
+      {/* The TV-only section: episodes per season (streams in on its own). */}
+      <Container className="mt-12 max-w-4xl">
+        <Suspense fallback={<EpisodesSectionSkeleton />}>
+          <EpisodesSection show={show} />
+        </Suspense>
+      </Container>
 
       {cast.length > 0 && (
         <MediaRail title="Cast">

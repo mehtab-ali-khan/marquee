@@ -1,7 +1,7 @@
 import "server-only";
 import { cacheLife } from "next/cache";
 import { TmdbError, tmdbFetch } from "./client";
-import type { Paginated, TvDetails, TvSummary } from "./types";
+import type { Paginated, SeasonDetails, TvDetails, TvSummary } from "./types";
 
 // Same pattern as movies.ts: one small cached function per endpoint.
 
@@ -38,6 +38,21 @@ export async function getTvShow(id: number): Promise<TvDetails | null> {
     return await tmdbFetch<TvDetails>(`/tv/${id}`, {
       append_to_response: "credits,videos,watch/providers,recommendations",
     });
+  } catch (error) {
+    if (error instanceof TmdbError && error.status === 404) return null;
+    throw error;
+  }
+}
+
+/**
+ * One season with its episodes, or null if the show/season doesn't exist.
+ * Cached for hours: a running season gains new episodes over time.
+ */
+export async function getSeason(tvId: number, seasonNumber: number): Promise<SeasonDetails | null> {
+  "use cache";
+  cacheLife("hours");
+  try {
+    return await tmdbFetch<SeasonDetails>(`/tv/${tvId}/season/${seasonNumber}`);
   } catch (error) {
     if (error instanceof TmdbError && error.status === 404) return null;
     throw error;

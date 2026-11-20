@@ -121,6 +121,25 @@ export type SeasonSummary = {
   overview: string;
 };
 
+/** One episode, as listed in a season. */
+export type Episode = {
+  id: number;
+  episode_number: number;
+  name: string;
+  overview: string;
+  runtime: number | null; // minutes
+  still_path: string | null; // a frame from the episode (16:9)
+  air_date: string | null;
+};
+
+/** A season with its episodes (/tv/{id}/season/{n}). */
+export type SeasonDetails = {
+  id: number;
+  season_number: number;
+  name: string;
+  episodes: Episode[];
+};
+
 /**
  * A TV show on its detail page. Same idea as MovieDetails: the list fields,
  * plus show-only fields (seasons, creators), plus everything we request
@@ -136,6 +155,8 @@ export type TvDetails = Omit<TvSummary, "genre_ids"> & {
   created_by: { id: number; name: string }[];
   networks: { id: number; name: string; logo_path: string | null }[];
   seasons: SeasonSummary[];
+  /** The most recently aired episode: which season the episode list opens on. */
+  last_episode_to_air: { season_number: number } | null;
   credits: { cast: CastMember[]; crew: CrewMember[] };
   videos: { results: Video[] };
   "watch/providers": { results: Record<string, WatchProviderRegion> };

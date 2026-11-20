@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { DynamicMarker } from "@/components/DynamicMarker";
 import { TitleSheet, movieSheet } from "@/features/home/TitleSheet";
 import { getMovie } from "@/lib/tmdb/movies";
 
@@ -19,5 +20,11 @@ export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Pr
 export default async function MovieModal({ params }: PageProps<"/movie/[id]">) {
   const movie = await load((await params).id);
   if (!movie) return <p className="p-10 text-fg-muted">This title couldn’t be found.</p>;
-  return <TitleSheet sheet={movieSheet(movie)} />;
+  return (
+    <>
+      <TitleSheet sheet={movieSheet(movie)} />
+      {/* Lets generateMetadata (which reads params) stream instead of blocking prefetch. */}
+      <DynamicMarker />
+    </>
+  );
 }
