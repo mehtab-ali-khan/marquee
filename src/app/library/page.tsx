@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Suspense } from "react";
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { Skeleton } from "@/components/ui/Skeleton";
 import { LibraryView } from "@/features/library/LibraryView";
 import { libraryQuery, readLibrarySelection } from "@/features/library/selection";
@@ -36,7 +37,12 @@ export default function LibraryPage({ searchParams }: PageProps<"/library">) {
   return (
     <main>
       <Container className="max-w-6xl py-8 sm:py-12">
-        <h1 className="mb-6 text-3xl sm:mb-8 sm:text-4xl">Your library</h1>
+        <PageHeader
+          eyebrow="Your library"
+          title={<>Saved for <span className="text-fg-muted italic">later.</span></>}
+          description="Your TMDB watchlist, favorites and ratings, in one place."
+          className="mb-10"
+        />
         <Suspense fallback={<Skeleton className="h-52 w-full rounded-lg" />}>
           <LibraryContent searchParams={searchParams} />
         </Suspense>

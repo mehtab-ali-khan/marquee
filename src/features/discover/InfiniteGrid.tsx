@@ -71,7 +71,7 @@ export function InfiniteGrid({ initialItems, totalPages, query }: InfiniteGridPr
 
   return (
     <>
-      <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 xl:grid-cols-5">
+      <div className="grid grid-cols-2 gap-x-4 gap-y-8 sm:grid-cols-3 md:grid-cols-4 xl:grid-cols-5">
         {items.map(({ key, ...card }, index) => (
           // The first row is on screen right away: load those posters immediately
           // (Next warned that the biggest visible image was being lazy-loaded).

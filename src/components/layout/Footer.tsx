@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { ArrowRight, ArrowUp, ArrowUpRight } from "lucide-react";
+import { ArrowRight, ArrowUp, ArrowUpRight, Search } from "lucide-react";
 import { buttonStyles } from "@/components/ui/Button";
 import { Container } from "@/components/ui/Container";
 
@@ -34,21 +34,31 @@ export function Footer() {
   return (
     <footer className="mt-auto overflow-hidden border-t border-line bg-surface/40">
       <Container className="pt-14 sm:pt-20">
-        {/* 1. The closing line */}
-        <div className="flex flex-col gap-8 lg:flex-row lg:items-end lg:justify-between">
+        {/* 1. The closing line: always two deliberate lines (never a ragged wrap),
+            with the actions sitting on the same bottom line as the headline. */}
+        <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_auto] lg:items-end lg:gap-16">
           <div>
-            <p className="text-xs font-semibold tracking-[0.22em] text-accent uppercase">The end</p>
-            <p className="mt-4 max-w-xl font-display text-4xl leading-[1.05] sm:text-5xl">
-              That’s a wrap. <span className="text-fg-muted italic">What’s next?</span>
+            <p className="flex items-center gap-3 text-xs font-semibold tracking-[0.22em] text-accent uppercase">
+              The end <span className="h-px w-10 bg-accent/60" aria-hidden="true" />
+            </p>
+            <p className="mt-5 font-display text-5xl leading-[0.95] tracking-[-0.01em] sm:text-6xl lg:text-7xl">
+              <span className="block">That’s a wrap.</span>
+              <span className="block text-fg-muted italic">What’s next?</span>
             </p>
           </div>
-          <div className="flex flex-wrap gap-3">
-            <Link href="/discover" className={buttonStyles({ size: "lg", className: "rounded-full" })}>
-              Discover something new <ArrowRight aria-hidden="true" />
-            </Link>
-            <Link href="/search" className={buttonStyles({ variant: "secondary", size: "lg", className: "rounded-full" })}>
-              Search
-            </Link>
+          <div className="flex flex-col gap-4 lg:items-end lg:pb-2">
+            <p className="text-sm leading-relaxed text-fg-muted lg:text-right">
+              <span className="block">Thousands more films and series are waiting.</span>
+              <span className="block">Find your next one.</span>
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <Link href="/discover" className={buttonStyles({ size: "lg", className: "rounded-full" })}>
+                Discover something new <ArrowRight aria-hidden="true" />
+              </Link>
+              <Link href="/search" className={buttonStyles({ variant: "secondary", size: "lg", className: "rounded-full" })}>
+                <Search aria-hidden="true" /> Search
+              </Link>
+            </div>
           </div>
         </div>
 

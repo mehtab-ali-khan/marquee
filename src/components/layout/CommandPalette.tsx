@@ -5,7 +5,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import * as Dialog from "@radix-ui/react-dialog";
 import { Command } from "cmdk";
-import { ArrowUpRight, Clapperboard, Loader2, Search, Tv, UserRound, X } from "lucide-react";
+import { ArrowUpRight, Clapperboard, CornerDownLeft, Loader2, Search, Tv, UserRound, X } from "lucide-react";
 import { posterUrl } from "@/lib/tmdb/images";
 import type { SearchItem } from "@/lib/tmdb/search-items";
 
@@ -67,6 +67,8 @@ export function CommandPalette() {
     if (value.trim() !== trimmed) setResponse(null);
   }
 
+  const searchAllHref = `/search?q=${encodeURIComponent(trimmed)}`;
+
   function go(href: string) {
     setOpen(false);
     updateQuery("");
@@ -106,17 +108,38 @@ export function CommandPalette() {
                 className="h-16 min-w-0 flex-1 bg-transparent text-base text-fg outline-none placeholder:text-fg-muted focus-visible:outline-none"
               />
               {loading && <Loader2 className="size-4 shrink-0 animate-spin text-fg-muted" aria-hidden="true" />}
+              {/* A visible "Search ↵" button: tells people Enter does something, and works for mouse and touch. */}
+              {trimmed && (
+                <button type="button" onClick={() => go(searchAllHref)}
+                  className="flex h-9 shrink-0 items-center gap-2 rounded-full bg-accent px-3.5 text-sm font-medium text-on-accent transition-[background-color,transform] duration-150 hover:bg-accent-hover active:scale-95">
+                  Search <CornerDownLeft className="hidden size-3.5 sm:block" aria-hidden="true" />
+                </button>
+              )}
               <Dialog.Close aria-label="Close search" className="grid size-9 shrink-0 place-items-center rounded-full border border-line text-fg-muted hover:text-fg">
                 <X className="size-4" aria-hidden="true" />
               </Dialog.Close>
             </div>
 
             <Command.List className="max-h-[min(50svh,29rem)] overflow-y-auto p-2" aria-busy={loading}>
-              {!trimmed && <p className="px-3 py-5 text-sm text-fg-muted">Search by title or name.</p>}
-              {loading && <Command.Loading className="px-3 py-5 text-sm text-fg-muted">Searching…</Command.Loading>}
+              {!trimmed && (
+                <p className="px-3 py-5 text-sm text-fg-muted">
+                  Type a title or a name. Pick a result, or press <kbd className="rounded-sm border border-line px-1 font-sans text-xs text-fg">↵</kbd> to see every match.
+                </p>
+              )}
+              {trimmed && (
+                <Command.Item value="see-all" onSelect={() => go(searchAllHref)}
+                  className="group mb-1 flex cursor-pointer items-center gap-3 rounded-md px-3 py-2.5 text-sm text-fg-muted data-[selected=true]:bg-raised data-[selected=true]:text-fg">
+                  <span className="grid h-8 w-8 shrink-0 place-items-center rounded-sm bg-accent/15 text-accent">
+                    <Search className="size-4" aria-hidden="true" />
+                  </span>
+                  <span className="min-w-0 flex-1 truncate">Search for <span className="font-semibold text-fg">“{trimmed}”</span></span>
+                  <kbd className="shrink-0 rounded-sm border border-line px-1.5 py-0.5 font-sans text-[11px] text-fg-muted group-data-[selected=true]:border-accent/60 group-data-[selected=true]:text-accent" aria-hidden="true">↵ Enter</kbd>
+                </Command.Item>
+              )}
+              {loading && <Command.Loading className="px-3 py-4 text-sm text-fg-muted">Searching…</Command.Loading>}
               {failed && <p role="status" className="px-3 py-5 text-sm text-fg-muted">Search is temporarily unavailable. Try again in a moment.</p>}
               {trimmed && !loading && !failed && results.length === 0 && (
-                <Command.Empty className="px-3 py-5 text-sm text-fg-muted">No results for “{trimmed}”.</Command.Empty>
+                <p className="px-3 py-4 text-sm text-fg-muted">No quick matches. Press ↵ to search everything.</p>
               )}
 
               {results.map((item) => {
@@ -140,18 +163,12 @@ export function CommandPalette() {
                 );
               })}
 
-              {results.length > 0 && (
-                <Command.Item value="see-all" onSelect={() => go(`/search?q=${encodeURIComponent(trimmed)}`)}
-                  className="mt-1 flex cursor-pointer items-center gap-2 rounded-md border-t border-line px-3 py-3 text-sm text-fg-muted data-[selected=true]:bg-raised data-[selected=true]:text-fg">
-                  <Search className="size-4 shrink-0" aria-hidden="true" /> <span className="truncate">See all results for “{trimmed}”</span>
-                </Command.Item>
-              )}
             </Command.List>
           </Command>
 
           <div className="hidden gap-4 border-t border-line px-5 py-3 text-xs text-fg-muted sm:flex" aria-hidden="true">
             <span><kbd className="font-sans text-fg">↑ ↓</kbd> Navigate</span>
-            <span><kbd className="font-sans text-fg">↵</kbd> Open</span>
+            <span><kbd className="font-sans text-fg">↵</kbd> Open / search</span>
             <span className="ml-auto"><kbd className="font-sans text-fg">Esc</kbd> Close</span>
           </div>
         </Dialog.Content>

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Suspense } from "react";
 import { MediaCardSkeleton } from "@/components/media/MediaSkeletons";
 import { Container } from "@/components/ui/Container";
+import { PageHeader } from "@/components/ui/PageHeader";
 import { FilterPanel } from "@/features/discover/FilterPanel";
 import { InfiniteGrid } from "@/features/discover/InfiniteGrid";
 import { discover, getGenres } from "@/lib/tmdb/discover";
@@ -18,9 +19,12 @@ export const metadata: Metadata = {
 export default function DiscoverPage({ searchParams }: PageProps<"/discover">) {
   return (
     <main className="pb-16">
-      <Container className="pt-12">
-        <h1 className="text-4xl">Discover</h1>
-        <p className="mt-2 text-fg-muted">Browse by genre, decade and rating.</p>
+      <Container className="pt-12 sm:pt-16">
+        <PageHeader
+          eyebrow="Discover · The full catalog"
+          title={<>Something for <span className="text-fg-muted italic">every night.</span></>}
+          description="Narrow the whole catalog by genre, decade and rating. Every filter is part of the link, so you can share what you find."
+        />
 
         <Suspense fallback={<DiscoverSkeleton />}>
           {searchParams.then((raw) => (
