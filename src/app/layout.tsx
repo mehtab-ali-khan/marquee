@@ -21,7 +21,15 @@ const hanken = Hanken_Grotesk({
   display: "swap",
 });
 
+// The site's public address, used to turn "/opengraph-image.png" into a full URL
+// that WhatsApp, Slack or X can fetch. Vercel provides its production domain as
+// VERCEL_PROJECT_PRODUCTION_URL; NEXT_PUBLIC_SITE_URL can override it (custom domain).
+const siteUrl =
+  process.env.NEXT_PUBLIC_SITE_URL ??
+  (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : "http://localhost:3000");
+
 export const metadata: Metadata = {
+  metadataBase: new URL(siteUrl),
   title: {
     default: "Marquee",
     // Child pages set just their own title, e.g. "Styleguide",
