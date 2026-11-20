@@ -56,15 +56,30 @@ export async function tmdbFetch<T>(
     if (value !== undefined) url.searchParams.set(key, String(value));
   }
 
-  const res = await fetch(url, {
-    method: options.method ?? "GET",
-    headers: {
-      Authorization: `Bearer ${getToken()}`,
-      Accept: "application/json",
-      ...(options.body !== undefined && { "Content-Type": "application/json" }),
-    },
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
+  const method = options.method ?? "GET";
+  const request = () =>
+    fetch(url, {
+      method,
+      headers: {
+        Authorization: `Bearer ${getToken()}`,
+        Accept: "application/json",
+        ...(options.body !== undefined && { "Content-Type": "application/json" }),
+      },
+      body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
+    });
+
+  let res: Response;
+  try {
+    res = await request();
+  } catch (error) {
+    // "fetch failed" = the connection itself dropped or timed out (no HTTP answer
+    // at all). Those blips are usually gone a moment later, so READS get one quiet
+    // retry. Writes (POST/DELETE) don't: if the first one actually reached TMDB,
+    // repeating it could apply the change twice.
+    if (method !== "GET") throw error;
+    await new Promise((resolve) => setTimeout(resolve, 300));
+    res = await request();
+  }
 
   if (!res.ok) {
     // TMDB sends errors as { status_message: "..." }; fall back to the HTTP text.

@@ -41,7 +41,7 @@ export function Footer() {
             <p className="flex items-center gap-3 text-xs font-semibold tracking-[0.22em] text-accent uppercase">
               The end <span className="h-px w-10 bg-accent/60" aria-hidden="true" />
             </p>
-            <p className="mt-5 font-display text-5xl leading-[0.95] tracking-[-0.01em] sm:text-6xl lg:text-7xl">
+            <p className="mt-5 font-display text-[2.6rem] leading-[0.95] tracking-[-0.01em] sm:text-6xl lg:text-7xl">
               <span className="block">That’s a wrap.</span>
               <span className="block text-fg-muted italic">What’s next?</span>
             </p>

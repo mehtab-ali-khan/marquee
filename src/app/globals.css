@@ -444,3 +444,35 @@ body:has(.screening-home) .marquee-site-header[data-scrolled="false"] {
 @media (prefers-reduced-motion: reduce) {
   .mobile-sheet[data-state="open"] .mobile-sheet-item { animation: none; }
 }
+
+/* =========================================================================
+   LOGIN (app/login): the slowly moving poster wall and strip.
+   Each track holds its posters twice and moves by exactly half its length,
+   so the loop has no visible seam.
+   ========================================================================= */
+.login-wall-column {
+  animation: login-wall-up linear infinite;
+}
+.login-wall-column.login-wall-down {
+  animation-name: login-wall-down;
+}
+.login-strip {
+  animation: login-strip 50s linear infinite;
+}
+@keyframes login-wall-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@keyframes login-wall-down {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+@keyframes login-strip {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+/* The global reduced-motion rule would make these loops flicker: stop them instead. */
+@media (prefers-reduced-motion: reduce) {
+  .login-wall-column,
+  .login-strip { animation: none; }
+}
