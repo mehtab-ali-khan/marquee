@@ -9,7 +9,7 @@ import { MovieCard } from "@/components/media/TitleCards";
 import { TrailerButton } from "@/components/media/TrailerButton";
 import { WatchProviders } from "@/components/media/WatchProviders";
 import { Container } from "@/components/ui/Container";
-import { WATCH_REGION, pickTrailer } from "@/lib/tmdb/details";
+import { WATCH_REGION, formatRuntime, pickTrailer } from "@/lib/tmdb/details";
 import { backdropUrl } from "@/lib/tmdb/images";
 import { getMovie } from "@/lib/tmdb/movies";
 
@@ -49,13 +49,6 @@ export async function generateMetadata({ params }: PageProps<"/movie/[id]">): Pr
   };
 }
 
-/** 139 → "2h 19m" */
-function formatRuntime(minutes: number | null) {
-  if (!minutes) return null;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h ? `${h}h ${m}m` : `${m}m`;
-}
 
 export default async function MoviePage({ params }: PageProps<"/movie/[id]">) {
   const { id } = await params; // params is a Promise in Next 15+, so we await it

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState, useTransition } from "react";
+import { useEffect, useMemo, useRef, useState, useTransition } from "react";
 import Image from "next/image";
 import Link from "next/link";
 import { motion, useReducedMotion } from "motion/react";
@@ -9,6 +9,7 @@ import { TrailerButton } from "@/components/media/TrailerButton";
 import { updateLibrary } from "@/features/library/actions";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/images";
 import type { PreviewDetails } from "@/lib/tmdb/preview";
+import { setModalOrigin } from "./modal-origin";
 import type { Anchor, PreviewItem } from "./PreviewLayer";
 
 // The enlarged hover preview (Netflix's "mini modal").
@@ -33,10 +34,23 @@ type TitlePreviewProps = {
   onPointerEnter: () => void;
   onPointerLeave: () => void;
   onLockChange: (locked: boolean) => void;
+  /** The card this preview belongs to: the detail modal shrinks back into it. */
+  card: HTMLElement;
+  /** Called when "More info" opens the detail modal (the preview closes). */
+  onOpenDetails: () => void;
 };
 
-export function TitlePreview({ item, anchor, onPointerEnter, onPointerLeave, onLockChange }: TitlePreviewProps) {
+export function TitlePreview({ item, anchor, card, onOpenDetails, onPointerEnter, onPointerLeave, onLockChange }: TitlePreviewProps) {
   const reduceMotion = useReducedMotion();
+  const previewRef = useRef<HTMLDivElement>(null);
+
+  // "More info": the modal grows out of THIS preview and later returns into the card.
+  function openDetails(event: React.MouseEvent) {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0) return; // new tab etc.
+    const from = previewRef.current?.getBoundingClientRect();
+    if (from) setModalOrigin({ from, returnTo: card });
+    onOpenDetails();
+  }
   const [details, setDetails] = useState<PreviewDetails | null>(() => detailsCache.get(item.key) ?? null);
   const [hiResLoaded, setHiResLoaded] = useState(false);
 
@@ -82,6 +96,7 @@ export function TitlePreview({ item, anchor, onPointerEnter, onPointerLeave, onL
 
   return (
     <motion.div
+      ref={previewRef}
       role="dialog"
       aria-label={`${item.title} preview`}
       className="absolute z-50 overflow-hidden rounded-lg bg-surface shadow-[0_16px_48px_-12px_rgb(0_0_0/0.85),0_0_0_1px_rgb(255_255_255/0.06)]"
@@ -97,7 +112,7 @@ export function TitlePreview({ item, anchor, onPointerEnter, onPointerLeave, onL
       onPointerLeave={onPointerLeave}
     >
       {/* Image area (16:9) with a slow "Ken Burns" zoom instead of a video. */}
-      <Link href={item.href} tabIndex={-1} className="relative block aspect-video overflow-hidden bg-raised">
+      <Link href={item.href} scroll={false} onClick={openDetails} tabIndex={-1} className="relative block aspect-video overflow-hidden bg-raised">
         <div className="ken-burns absolute inset-0">
           {lowRes && (
             // Same src + sizes as the card → the browser already has this file: instant.
@@ -134,6 +149,8 @@ export function TitlePreview({ item, anchor, onPointerEnter, onPointerLeave, onL
           <WatchlistToggle item={item} details={details} />
           <Link
             href={item.href}
+            scroll={false}
+            onClick={openDetails}
             aria-label={`More info about ${item.title}`}
             title="More info"
             className="ml-auto grid size-10 place-items-center rounded-full border border-white/20 text-fg transition-colors duration-150 hover:border-fg"

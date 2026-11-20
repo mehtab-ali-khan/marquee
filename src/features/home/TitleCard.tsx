@@ -5,6 +5,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { Clapperboard } from "lucide-react";
 import { backdropUrl, posterUrl } from "@/lib/tmdb/images";
+import { setModalOrigin } from "./modal-origin";
 import { usePreview, type PreviewItem } from "./PreviewLayer";
 
 // A 16:9 title card (Netflix-style). Resting the MOUSE on it opens the hover
@@ -16,7 +17,7 @@ export const CARD_IMAGE_SIZES = "(min-width: 1280px) 19vw, (min-width: 1024px) 2
 
 export function TitleCard({ item, eager = false }: { item: Omit<PreviewItem, "imageSizes">; eager?: boolean }) {
   const ref = useRef<HTMLAnchorElement>(null);
-  const { hoverStart, hoverEnd } = usePreview();
+  const { hoverStart, hoverEnd, closeNow } = usePreview();
   const src = backdropUrl(item.backdropPath, "w780") ?? posterUrl(item.posterPath, "w500");
 
   return (
@@ -24,6 +25,14 @@ export function TitleCard({ item, eager = false }: { item: Omit<PreviewItem, "im
       <Link
         ref={ref}
         href={item.href}
+        // Don't jump to the top: the modal opens over the page right where you are.
+        scroll={false}
+        onClick={(event) => {
+          if (event.metaKey || event.ctrlKey || event.shiftKey || event.button !== 0 || !ref.current) return;
+          // The detail modal grows out of this card, and later shrinks back into it.
+          setModalOrigin({ from: ref.current.getBoundingClientRect(), returnTo: ref.current });
+          closeNow(); // a preview might be opening for this card
+        }}
         className="title-card group relative block aspect-video overflow-hidden rounded-md bg-surface outline-offset-4"
         onPointerEnter={(event) => {
           if (event.pointerType === "mouse" && ref.current) {

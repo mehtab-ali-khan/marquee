@@ -12,6 +12,7 @@ import {
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
+import { usePathname } from "next/navigation";
 import { AnimatePresence } from "motion/react";
 import { TitlePreview } from "./TitlePreview";
 
@@ -65,7 +66,11 @@ const useIsClient = () => useSyncExternalStore(subscribe, () => true, () => fals
 
 export function PreviewLayer({ children }: { children: ReactNode }) {
   const isClient = useIsClient();
-  const [active, setActiveState] = useState<{ item: PreviewItem; anchor: Anchor } | null>(null);
+  const [active, setActiveState] = useState<{ item: PreviewItem; anchor: Anchor; card: HTMLElement } | null>(null);
+  // On the home page the URL is "/". When a detail modal opens it becomes
+  // "/movie/550" (the home page stays underneath): previews must close and stay closed.
+  const pathname = usePathname();
+  const onHome = pathname === "/";
   // Timers need the CURRENT value, not the one captured when they were created,
   // so we mirror the state in a ref, updated together with it (never during render).
   const activeRef = useRef(active);
@@ -99,6 +104,7 @@ export function PreviewLayer({ children }: { children: ReactNode }) {
         const rect = element.getBoundingClientRect();
         setActive({
           item,
+          card: element,
           anchor: {
             left: rect.left + window.scrollX,
             top: rect.top + window.scrollY,
@@ -132,7 +138,15 @@ export function PreviewLayer({ children }: { children: ReactNode }) {
     };
   }, [closeNow, clearTimers]);
 
-  const api = useMemo(() => ({ hoverStart, hoverEnd, closeNow }), [hoverStart, hoverEnd, closeNow]);
+  const api = useMemo(
+    () => ({
+      // While a modal is open, hovering cards (under the dimmed backdrop) opens nothing.
+      hoverStart: onHome ? hoverStart : () => {},
+      hoverEnd,
+      closeNow,
+    }),
+    [onHome, hoverStart, hoverEnd, closeNow],
+  );
 
   return (
     <PreviewContext.Provider value={api}>
@@ -141,11 +155,14 @@ export function PreviewLayer({ children }: { children: ReactNode }) {
         createPortal(
           // AnimatePresence keeps a removed preview around until its exit animation ends.
           <AnimatePresence>
-            {active && (
+            {/* Only on "/": while a detail modal is open (URL /movie/…) no preview shows. */}
+            {active && onHome && (
               <TitlePreview
                 key={active.item.key}
                 item={active.item}
                 anchor={active.anchor}
+                card={active.card}
+                onOpenDetails={closeNow}
                 onPointerEnter={() => window.clearTimeout(closeTimer.current)}
                 onPointerLeave={hoverEnd}
                 onLockChange={(isLocked) => {

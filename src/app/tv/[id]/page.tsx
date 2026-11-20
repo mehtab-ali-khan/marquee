@@ -10,10 +10,9 @@ import { TvCard } from "@/components/media/TitleCards";
 import { TrailerButton } from "@/components/media/TrailerButton";
 import { WatchProviders } from "@/components/media/WatchProviders";
 import { Container } from "@/components/ui/Container";
-import { WATCH_REGION, pickTrailer } from "@/lib/tmdb/details";
+import { WATCH_REGION, formatYears, pickTrailer, plural } from "@/lib/tmdb/details";
 import { backdropUrl } from "@/lib/tmdb/images";
 import { getTvShow } from "@/lib/tmdb/tv";
-import type { TvDetails } from "@/lib/tmdb/types";
 
 // /tv/1396 → Breaking Bad. Same structure as the movie page; the shared
 // pieces (header, cast rail, trailer, where to watch) are reused components.
@@ -38,25 +37,6 @@ export async function generateMetadata({ params }: PageProps<"/tv/[id]">): Promi
     description: show.overview,
     openGraph: { title: show.name, description: show.overview, images: image ? [image] : [] },
   };
-}
-
-/**
- * The years a show ran:
- *   ended:   "2008–2013"   (or just "2008" if it lasted one year)
- *   running: "2019–present"
- */
-function formatYears(show: TvDetails) {
-  const start = show.first_air_date?.slice(0, 4);
-  if (!start) return null;
-  const isOver = show.status === "Ended" || show.status === "Canceled";
-  if (!isOver) return `${start}–present`;
-  const end = show.last_air_date?.slice(0, 4);
-  return end && end !== start ? `${start}–${end}` : start;
-}
-
-/** 1 → "1 season", 5 → "5 seasons" */
-function plural(count: number, word: string) {
-  return `${count} ${word}${count === 1 ? "" : "s"}`;
 }
 
 export default async function TvPage({ params }: PageProps<"/tv/[id]">) {

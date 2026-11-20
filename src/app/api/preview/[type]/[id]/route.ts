@@ -1,6 +1,6 @@
 import type { NextRequest } from "next/server";
 import { getCurrentUser, getSessionId } from "@/lib/auth/session";
-import { pickTrailer } from "@/lib/tmdb/details";
+import { formatRuntime, pickTrailer } from "@/lib/tmdb/details";
 import { getTitleState } from "@/lib/tmdb/library";
 import { getMovie } from "@/lib/tmdb/movies";
 import type { PreviewDetails } from "@/lib/tmdb/preview";
@@ -12,13 +12,6 @@ import { getTvShow } from "@/lib/tmdb/tv";
 // never be cached by a browser or CDN for other people.
 
 const headers = { "Cache-Control": "private, no-store" };
-
-function formatRuntime(minutes: number | null) {
-  if (!minutes) return null;
-  const h = Math.floor(minutes / 60);
-  const m = minutes % 60;
-  return h ? `${h}h ${m}m` : `${m}m`;
-}
 
 export async function GET(_request: NextRequest, ctx: RouteContext<"/api/preview/[type]/[id]">) {
   const { type, id: rawId } = await ctx.params;
