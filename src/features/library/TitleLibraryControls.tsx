@@ -15,18 +15,27 @@ export function TitleLibraryControls({ type, id, initial }: {
   id: number;
   initial: TitleState;
 }) {
-  const [state, setOptimistic] = useOptimistic(initial);
+  // `saved` = the last state TMDB CONFIRMED. We keep it ourselves instead of
+  // re-reading TMDB right after a save: TMDB's account_states can lag a few
+  // seconds behind a write, which made a just-ticked button flip back.
+  const [saved, setSaved] = useState(initial);
+  // `state` = what the user sees: the optimistic value while a save is running,
+  // then automatically back to `saved` (the new value on success, the old one on failure).
+  const [state, setOptimistic] = useOptimistic(saved);
   const [pending, startTransition] = useTransition();
   const [error, setError] = useState("");
   const [draft, setDraft] = useState(0);
 
   function save(field: keyof TitleState, value: boolean | number) {
     setError("");
+    const next = { ...state, [field]: value };
     startTransition(async () => {
-      setOptimistic({ ...state, [field]: value });
+      setOptimistic(next);
       try {
         const result = await updateLibrary(type, id, field, value);
         if (result.error) setError(result.error);
+        // Updates after an `await` must be wrapped again to count as part of the transition.
+        else startTransition(() => setSaved(next));
       } catch {
         setError("Couldn’t save your change. Try again.");
       }

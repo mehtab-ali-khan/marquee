@@ -13,9 +13,11 @@ type MediaCardProps = {
   posterPath: string | null;
   year?: string; // "2024"
   rating?: number; // 0–10
+  /** true for the first cards visible without scrolling: load now, not lazily. */
+  eager?: boolean;
 };
 
-export function MediaCard({ href, title, posterPath, year, rating }: MediaCardProps) {
+export function MediaCard({ href, title, posterPath, year, rating, eager = false }: MediaCardProps) {
   const src = posterUrl(posterPath, "w342");
 
   return (
@@ -30,6 +32,7 @@ export function MediaCard({ href, title, posterPath, year, rating }: MediaCardPr
             // How wide the card is on screen, so the browser downloads a small enough file:
             // 2 per row on phones, about 6 per row on desktop.
             sizes="(max-width: 640px) 45vw, (max-width: 1024px) 25vw, 15vw"
+            loading={eager ? "eager" : "lazy"}
             className="object-cover transition-transform duration-250 ease-out-soft group-hover:scale-[1.03]"
           />
         ) : (

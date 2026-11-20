@@ -1,64 +1,75 @@
 "use client";
-// ↑ This line makes it a Client Component: it runs in the browser too.
-// We need that because only the browser knows the CURRENT URL as you click
-// around. Everything else in the header stays a Server Component.
 
-import { Suspense } from "react";
+import { Suspense, useOptimistic, useState, useTransition } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { cn } from "@/lib/utils";
 
-type NavLinkProps = {
-  href: string;
-  children: React.ReactNode;
-};
+type NavItem = { href: string; label: string };
 
-const baseClasses = cn(
-  "relative rounded-sm px-3 py-2 text-sm transition-colors duration-150",
-  // A thin brass line under the active link, which grows in from the center.
-  "after:absolute after:inset-x-3 after:-bottom-[13px] after:h-px after:bg-accent",
-  "after:origin-center after:transition-transform after:duration-250 after:ease-out-soft",
-);
+function NavTrack({ items, activeIndex = -1, destination = activeIndex, onNavigate }: {
+  items: NavItem[];
+  activeIndex?: number;
+  destination?: number;
+  onNavigate?: (index: number, href: string) => void;
+}) {
+  const [hovered, setHovered] = useState<number | null>(null);
+  const indicatorIndex = hovered ?? destination;
 
-/**
- * On pages like /movie/[id], the URL is only known when someone visits.
- * Next pre-builds the page "shell" before that, so usePathname() must sit
- * inside <Suspense>. Until the URL is known, we show the same link without
- * the active highlight (the fallback). It looks identical, so nobody notices.
- */
-export function NavLink(props: NavLinkProps) {
   return (
-    <Suspense
-      fallback={
-        <Link href={props.href} className={cn(baseClasses, "text-fg-muted after:scale-x-0 hover:text-fg")}>
-          {props.children}
-        </Link>
-      }
-    >
-      <ActiveAwareLink {...props} />
-    </Suspense>
+    <nav aria-label="Main" className="hidden shrink-0 lg:block">
+      <ul className="relative isolate grid grid-flow-col auto-cols-fr items-center rounded-full border border-white/10 bg-canvas/35 p-1"
+        onPointerLeave={() => setHovered(null)}>
+        <li aria-hidden="true" className="marquee-nav-indicator pointer-events-none absolute inset-y-1 left-1 -z-10 rounded-full border border-accent/40 bg-accent/10"
+          data-active={indicatorIndex >= 0}
+          style={{
+            width: `calc((100% - 8px) / ${items.length})`,
+            transform: `translateX(${Math.max(0, indicatorIndex) * 100}%)`,
+          }}
+        />
+        {items.map(({ href, label }, index) => (
+          <li key={href}>
+            <Link href={href} aria-current={index === activeIndex ? "page" : undefined}
+              onPointerEnter={(event) => { if (event.pointerType === "mouse") setHovered(index); }}
+              onNavigate={onNavigate && ((event) => {
+                if (index === activeIndex) return;
+                event.preventDefault();
+                onNavigate(index, href);
+              })}
+              className={cn(
+                "flex min-h-8 items-center justify-center rounded-full px-2 text-sm font-medium transition-[color,transform] duration-200 hover:text-fg active:scale-95 xl:px-2.5",
+                index === destination ? "text-accent" : "text-fg/75",
+              )}>
+              {label}
+            </Link>
+          </li>
+        ))}
+      </ul>
+    </nav>
   );
 }
 
-function ActiveAwareLink({ href, children }: NavLinkProps) {
-  // Like React Router's useLocation().pathname, e.g. "/discover"
+function ActiveNav({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const activeIndex = items.findIndex(({ href }) => pathname === href || (href !== "/" && pathname?.startsWith(`${href}/`)));
+  const [destination, setDestination] = useOptimistic(activeIndex);
+  const [, startTransition] = useTransition();
 
-  // "/" must match exactly (otherwise Home would be active everywhere).
-  // Other links also stay active on their sub-pages: /library/favorites → Library.
-  const isActive = href === "/" ? pathname === "/" : pathname.startsWith(href);
+  function navigate(index: number, href: string) {
+    startTransition(() => {
+      setDestination(index);
+      router.push(href);
+    });
+  }
 
+  return <NavTrack items={items} activeIndex={activeIndex} destination={destination} onNavigate={navigate} />;
+}
+
+export function DesktopNav({ items }: { items: NavItem[] }) {
   return (
-    <Link
-      href={href}
-      // Tells screen readers "this is the page you're on".
-      aria-current={isActive ? "page" : undefined}
-      className={cn(
-        baseClasses,
-        isActive ? "text-fg after:scale-x-100" : "text-fg-muted after:scale-x-0 hover:text-fg",
-      )}
-    >
-      {children}
-    </Link>
+    <Suspense fallback={<NavTrack items={items} />}>
+      <ActiveNav items={items} />
+    </Suspense>
   );
 }

@@ -114,9 +114,17 @@ async function PosterMosaic() {
   return (
     <div aria-hidden="true" className="absolute inset-0 -z-10">
       <div className="grid h-full grid-cols-6 gap-2 opacity-40 blur-sm md:grid-cols-9">
-        {posters.map((movie) => (
+        {posters.map((movie, index) => (
           <div key={movie.id} className="relative aspect-[2/3]">
-            <Image src={posterUrl(movie.poster_path, "w185")!} alt="" fill sizes="12vw" className="object-cover" />
+            {/* The first row is visible immediately (and is the largest image on the page). */}
+            <Image
+              src={posterUrl(movie.poster_path, "w185")!}
+              alt=""
+              fill
+              sizes="12vw"
+              loading={index < 9 ? "eager" : "lazy"}
+              className="object-cover"
+            />
           </div>
         ))}
       </div>

@@ -33,16 +33,22 @@ export function MediaRailSkeleton({ title }: { title: string }) {
 /** Same height as Hero, with bars where the label, title and text will be. */
 export function HeroSkeleton() {
   return (
-    <section className="relative flex min-h-[70vh] items-end bg-surface md:min-h-[78vh]">
-      <Container className="pt-32 pb-12 md:pb-16">
-        <div className="max-w-xl">
+    <section className="screening-hero relative flex items-end">
+      <Container className="pt-40 pb-8 sm:pb-12 lg:pb-14">
+        <div className="min-h-[15rem] max-w-2xl sm:min-h-[17rem]">
           <Skeleton className="mb-4 h-3 w-40" />
-          <Skeleton className="h-12 w-4/5 md:h-14" />
+          <Skeleton className="h-12 w-4/5 sm:h-20" />
           <Skeleton className="mt-5 h-4 w-24" />
           <Skeleton className="mt-5 h-4 w-full" />
           <Skeleton className="mt-2 h-4 w-11/12" />
           <Skeleton className="mt-2 h-4 w-2/3" />
-          <Skeleton className="mt-8 h-12 w-36 rounded-sm" />
+        </div>
+        <div className="mt-5 flex items-center justify-between gap-3 sm:mt-6">
+          <Skeleton className="h-11 w-36 rounded-full" />
+          <div className="flex gap-2">
+            <Skeleton className="size-10 rounded-full" />
+            <Skeleton className="size-10 rounded-full" />
+          </div>
         </div>
       </Container>
     </section>

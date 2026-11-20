@@ -26,7 +26,9 @@ export async function updateLibrary(type: unknown, id: unknown, field: unknown, 
     return { error: "Couldn’t save your change. Try again." };
   }
 
+  // Refresh the library page's data. The detail page is NOT revalidated: its
+  // buttons already show the confirmed state, and re-reading TMDB immediately
+  // could return the old value (TMDB lags a few seconds after a write).
   revalidatePath("/library");
-  revalidatePath(`/${type}/${id}`);
   return { error: null };
 }
