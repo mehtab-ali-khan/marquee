@@ -74,9 +74,11 @@ export function MobileNav({ items, account }: { items: NavItem[]; account: React
 
           <div className="flex-1 overflow-y-auto overscroll-contain">
             <Container className="flex min-h-full flex-col py-6">
+              {/* Capped width on tablets, but left-aligned with the logo above. */}
+              <div className="flex w-full max-w-lg flex-1 flex-col">
               <Link
                 href="/search"
-                className="mobile-sheet-item flex h-12 items-center gap-3 rounded-full border border-line bg-surface px-4 text-fg-subtle"
+                className="mobile-sheet-item flex h-11 items-center gap-3 rounded-full border border-line bg-surface px-4 text-sm text-fg-subtle"
                 style={{ "--i": 0 } as React.CSSProperties}
               >
                 <Search className="size-4 text-accent" aria-hidden="true" />
@@ -89,9 +91,10 @@ export function MobileNav({ items, account }: { items: NavItem[]; account: React
                 </Suspense>
               </nav>
 
-              <div className="mobile-sheet-item mt-auto pt-8" style={{ "--i": items.length + 1 } as React.CSSProperties}>
+              <div className="mobile-sheet-item mt-10" style={{ "--i": items.length + 1 } as React.CSSProperties}>
                 {account}
                 <p className="mt-6 text-center text-xs text-fg-subtle">Film and TV data from TMDB.</p>
+              </div>
               </div>
             </Container>
           </div>
@@ -117,14 +120,14 @@ function SheetLinks({ items, active }: { items: NavItem[]; active: number }) {
             href={item.href}
             aria-current={index === active ? "page" : undefined}
             className={cn(
-              "group flex items-baseline gap-4 py-4 transition-colors",
+              "group flex items-baseline gap-4 py-3.5 transition-colors",
               index === active ? "text-accent" : "text-fg active:text-accent",
             )}
           >
             <span className="w-6 text-xs font-semibold tracking-[0.2em] text-fg-subtle tabular-nums">{String(index + 1).padStart(2, "0")}</span>
-            <span className="font-display text-4xl leading-none sm:text-5xl">{item.label}</span>
+            <span className="font-display text-[1.75rem] leading-none">{item.label}</span>
             <ArrowRight
-              className={cn("ml-auto size-5 self-center transition-transform group-active:translate-x-1", index === active ? "text-accent" : "text-fg-subtle")}
+              className={cn("ml-auto size-4 self-center transition-transform group-active:translate-x-1", index === active ? "text-accent" : "text-fg-subtle")}
               aria-hidden="true"
             />
           </Link>

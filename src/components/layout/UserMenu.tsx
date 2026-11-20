@@ -44,10 +44,10 @@ export async function MobileAccount() {
 
   if (!account) {
     return (
-      <div className="rounded-xl border border-line bg-surface p-5">
-        <p className="font-display text-2xl">Keep your list.</p>
+      <div className="rounded-xl border border-line bg-surface p-4">
+        <p className="font-display text-xl">Keep your list.</p>
         <p className="mt-1.5 text-sm text-fg-muted">Sign in with your free TMDB account to save, favorite and rate.</p>
-        <Link href="/login" className={buttonStyles({ size: "lg", className: "mt-5 w-full rounded-full" })}>
+        <Link href="/login" className={buttonStyles({ className: "mt-4 w-full rounded-full" })}>
           Sign in <ArrowRight aria-hidden="true" />
         </Link>
       </div>
@@ -56,13 +56,13 @@ export async function MobileAccount() {
 
   const displayName = account.name || account.username;
   return (
-    <div className="rounded-xl border border-line bg-surface p-4">
+    <div className="rounded-xl border border-line bg-surface p-3">
       <div className="flex items-center gap-3">
         <span className="rounded-full p-0.5 ring-1 ring-accent/50">
-          <Avatar account={account} size={44} />
+          <Avatar account={account} size={34} />
         </span>
         <div className="min-w-0 flex-1">
-          <p className="truncate font-display text-xl leading-tight">{displayName}</p>
+          <p className="truncate text-sm font-medium leading-tight">{displayName}</p>
           <p className="truncate text-xs text-fg-subtle">@{account.username} · TMDB</p>
         </div>
         <a
@@ -70,27 +70,27 @@ export async function MobileAccount() {
           target="_blank"
           rel="noopener noreferrer"
           aria-label="Profile on TMDB"
-          className="grid size-10 shrink-0 place-items-center rounded-full border border-line text-fg-muted transition-colors hover:text-fg"
+          className="grid size-8 shrink-0 place-items-center rounded-full border border-line text-fg-muted transition-colors hover:text-fg"
         >
           <ArrowUpRight className="size-4" aria-hidden="true" />
         </a>
       </div>
-      <div className="mt-4 grid grid-cols-3 gap-2">
+      <div className="mt-3 grid grid-cols-3 gap-2">
         {libraryShelves.map(({ tab, label, icon: Icon }) => (
           <Link
             key={tab}
             href={tab === "watchlist" ? "/library" : `/library?tab=${tab}`}
-            className="flex flex-col items-center gap-1.5 rounded-lg border border-line bg-canvas/50 py-3 text-xs text-fg-muted transition-colors active:border-accent/50 active:bg-accent/10"
+            className="flex h-10 items-center justify-center gap-1.5 rounded-lg border border-line bg-canvas/50 text-xs text-fg-muted transition-colors hover:text-fg active:border-accent/50 active:bg-accent/10"
           >
-            <Icon className="size-4 text-accent" aria-hidden="true" />
+            <Icon className="size-3.5 text-accent" aria-hidden="true" />
             {label}
           </Link>
         ))}
       </div>
-      <form action={signOut} className="mt-3">
+      <form action={signOut} className="mt-1">
         <button
           type="submit"
-          className="flex min-h-11 w-full items-center justify-center gap-2 rounded-lg text-sm text-fg-muted transition-colors hover:text-danger active:bg-danger/10"
+          className="flex min-h-10 w-full items-center justify-center gap-2 rounded-lg text-sm text-fg-muted transition-colors hover:text-danger active:bg-danger/10"
         >
           <LogOut className="size-4" aria-hidden="true" /> Sign out
         </button>

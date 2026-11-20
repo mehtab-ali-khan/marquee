@@ -26,6 +26,9 @@ export function Avatar({ account, size }: { account: AccountInfo; size: number }
   const initial = (account.name || account.username).charAt(0).toUpperCase();
   const [unusable, setUnusable] = useState(false);
   const showImage = account.avatarUrl && !unusable;
+  const checkSize = ({ naturalWidth: w, naturalHeight: h }: HTMLImageElement) => {
+    if (Math.min(w, h) < 24 || w / h > 2 || h / w > 2) setUnusable(true);
+  };
   return (
     <span
       className="relative grid shrink-0 place-items-center overflow-hidden rounded-full bg-[linear-gradient(140deg,var(--color-accent),#8a5a1c)] font-display text-on-accent"
@@ -40,9 +43,11 @@ export function Avatar({ account, size }: { account: AccountInfo; size: number }
           sizes={`${size}px`}
           className="object-cover"
           onError={() => setUnusable(true)}
-          onLoad={(event) => {
-            const { naturalWidth: w, naturalHeight: h } = event.currentTarget;
-            if (Math.min(w, h) < 24 || w / h > 2 || h / w > 2) setUnusable(true);
+          // Check on load, AND on mount: a cached image can finish loading
+          // before React attaches onLoad, and then onLoad never fires.
+          onLoad={(event) => checkSize(event.currentTarget)}
+          ref={(img) => {
+            if (img?.complete && img.naturalWidth > 0) checkSize(img);
           }}
         />
       ) : (

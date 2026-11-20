@@ -15,8 +15,11 @@ const navItems = [
 export function Header() {
   return (
     <HeaderFrame>
-      <Container className="grid h-full grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-2 sm:grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)]">
-        <div className="flex min-w-0 items-center gap-2 xl:gap-5">
+      {/* Flex with explicit gaps: logo · nav on the left, search in the middle
+          (it grows to fill the space, up to 22rem), account on the right. Below lg
+          the search shrinks to an icon or a short field next to the menu button. */}
+      <Container className="flex h-full items-center gap-2 sm:gap-3 lg:gap-8">
+        <div className="flex shrink-0 items-center gap-6 xl:gap-8">
           <Link href="/" aria-label="Marquee home" className="group flex w-fit shrink-0 items-center gap-1.5 rounded-sm sm:gap-2">
             <span className="grid size-5 place-items-center rounded-[5px] border border-accent/45 bg-canvas/60 sm:size-7" aria-hidden="true">
               <span className="size-1.5 rounded-full bg-accent shadow-[0_0_10px_var(--color-accent)] transition-transform group-hover:scale-125" />
@@ -26,13 +29,13 @@ export function Header() {
           <DesktopNav items={navItems} />
         </div>
 
-        {/* 14rem until xl. (17vw at lg was narrower than the sm size: only 174px at
-            1024px wide, so "Search Marquee" wrapped onto two lines.) */}
-        <div className="sm:w-56 xl:w-[min(25vw,22rem)]">
-          <CommandPalette />
+        <div className="ml-auto flex min-w-0 justify-center lg:ml-0 lg:flex-1">
+          <div className="sm:w-56 lg:w-full lg:max-w-[22rem]">
+            <CommandPalette />
+          </div>
         </div>
 
-        <div className="flex items-center justify-self-end gap-1.5 sm:gap-2">
+        <div className="flex shrink-0 items-center gap-2">
           {/* Desktop: avatar menu. Phones/tablets: everything lives in the full-screen menu. */}
           <div className="hidden lg:block">
             <Suspense fallback={<UserMenuFallback />}><UserMenu /></Suspense>
