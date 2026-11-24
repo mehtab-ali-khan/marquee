@@ -1,0 +1,499 @@
+@import "tailwindcss";
+
+/* =========================================================================
+   MARQUEE DESIGN TOKENS
+   In Tailwind v4 the theme lives in CSS, inside @theme (no tailwind.config.js).
+   Every variable here does two things:
+     1. It becomes a normal CSS variable, e.g. var(--color-accent)
+     2. It generates Tailwind classes, e.g. bg-accent, text-accent, border-accent
+   ========================================================================= */
+
+@theme {
+  /* --- Colors ----------------------------------------------------------
+     "initial" wipes Tailwind's default palette (red-500, zinc-400...).
+     Only OUR colors exist, so nobody can sneak in an off-brand color. */
+  --color-*: initial;
+
+  --color-canvas: #0e0f11;        /* page background (warm near-black) */
+  --color-surface: #16181b;       /* cards, header */
+  --color-raised: #1e2125;        /* menus, modals, hover states */
+  --color-line: #2a2e33;          /* borders, dividers */
+
+  --color-fg: #edeae4;            /* primary text (warm off-white) */
+  --color-fg-muted: #a39e95;      /* secondary text */
+  --color-fg-subtle: #6e6a63;     /* captions, metadata */
+
+  --color-accent: #e4a853;        /* brass "marquee bulb" - use sparingly */
+  --color-accent-hover: #f0bc6e;
+  --color-on-accent: #1a1306;     /* text placed ON the accent color */
+
+  --color-success: #6fbf8e;
+  --color-danger: #e0645a;
+
+  --color-transparent: transparent;
+  --color-current: currentColor;
+  --color-black: #000;
+  --color-white: #fff;
+
+  /* --- Fonts (the actual font files are loaded in layout.tsx) ---------- */
+  --font-sans: var(--font-hanken), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-fraunces), ui-serif, Georgia, serif;
+
+  /* --- Type scale: ratio 1.25 ("major third"), base 16px --------------- */
+  --text-*: initial;
+  --text-xs: 0.75rem;     /* 12px */
+  --text-xs--line-height: 1rem;
+  --text-sm: 0.875rem;    /* 14px */
+  --text-sm--line-height: 1.25rem;
+  --text-base: 1rem;      /* 16px */
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.25rem;     /* 20px */
+  --text-lg--line-height: 1.75rem;
+  --text-xl: 1.5625rem;   /* 25px */
+  --text-xl--line-height: 2rem;
+  --text-2xl: 1.953rem;   /* 31px */
+  --text-2xl--line-height: 2.375rem;
+  --text-3xl: 2.441rem;   /* 39px */
+  --text-3xl--line-height: 2.75rem;
+  --text-4xl: 3.052rem;   /* 49px */
+  --text-4xl--line-height: 1.1;
+  --text-5xl: 3.815rem;   /* 61px */
+  --text-5xl--line-height: 1.05;
+
+  /* --- Corner radius ---------------------------------------------------- */
+  --radius-sm: 6px;       /* buttons, badges */
+  --radius-md: 10px;      /* cards */
+  --radius-lg: 16px;      /* modals, large panels */
+
+  /* --- Motion ------------------------------------------------------------
+     One easing curve for the whole app = motion feels consistent.
+     Fast start, gentle stop: things "arrive" rather than bounce. */
+  --ease-out-soft: cubic-bezier(0.2, 0, 0, 1);
+
+  --animate-shimmer: shimmer 1.8s linear infinite;
+  @keyframes shimmer {
+    from { background-position: 150% 0; }
+    to { background-position: -50% 0; }
+  }
+
+  /* Modals: the dark backdrop fades, the box fades + grows slightly. */
+  --animate-fade-in: fade-in 250ms var(--ease-out-soft);
+  --animate-fade-out: fade-out 150ms ease-in;
+  --animate-dialog-in: dialog-in 250ms var(--ease-out-soft);
+  --animate-dialog-out: dialog-out 150ms ease-in;
+  @keyframes fade-in {
+    from { opacity: 0; }
+  }
+  @keyframes fade-out {
+    to { opacity: 0; }
+  }
+  @keyframes dialog-in {
+    from { opacity: 0; scale: 0.96; }
+  }
+  @keyframes dialog-out {
+    to { opacity: 0; scale: 0.96; }
+  }
+
+  /* --- Layout ----------------------------------------------------------- */
+  --container-page: 1440px;
+}
+
+/* =========================================================================
+   CUSTOM UTILITIES - our own Tailwind classes
+   ========================================================================= */
+
+/* "scrollbar-none": hide the scrollbar but keep scrolling (swipe, trackpad,
+   shift+wheel, keyboard). Used by horizontal poster rows. */
+@utility scrollbar-none {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* =========================================================================
+   BASE STYLES - apply to plain HTML elements
+   ========================================================================= */
+@layer base {
+  html {
+    color-scheme: dark;            /* native scrollbars & form controls go dark */
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-canvas font-sans text-base text-fg antialiased;
+  }
+
+  h1, h2, h3 {
+    @apply font-display tracking-tight text-balance;
+  }
+
+  ::selection {
+    @apply bg-accent text-on-accent;
+  }
+
+  /* Visible focus ring for keyboard users only (not on mouse click). */
+  :focus-visible {
+    outline: 2px solid var(--color-accent);
+    outline-offset: 2px;
+  }
+}
+
+/* =========================================================================
+   PAGE TRANSITIONS (used by <ViewTransition> in app/template.tsx)
+   The browser takes a "screenshot" of the old page and the new page, and
+   animates between them:
+     ::view-transition-old(.page-exit)  = the page you're leaving  → quick fade out
+     ::view-transition-new(.page-enter) = the page you're entering → fade in + rise 8px
+   ========================================================================= */
+::view-transition-old(.page-exit) {
+  animation: 150ms ease-in both page-fade-out;
+}
+::view-transition-new(.page-enter) {
+  animation: 300ms var(--ease-out-soft) 80ms both page-rise-in;
+}
+
+@keyframes page-fade-out {
+  to { opacity: 0; }
+}
+@keyframes page-rise-in {
+  from { opacity: 0; translate: 0 8px; }
+}
+
+/* Respect the OS "reduce motion" setting: keep fades, drop movement & loops. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+
+  /* Page transitions are pseudo-elements, which "*" doesn't reach. */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+/* Screening Room */
+:root {
+  --marquee-header-height: 4.25rem;
+}
+
+#main-content {
+  scroll-margin-top: var(--marquee-header-height);
+}
+
+.screening-home {
+  margin-block-start: calc(-1 * var(--marquee-header-height));
+}
+
+.screening-hero {
+  min-height: clamp(35rem, 84svh, 49rem);
+  background: var(--color-canvas);
+}
+
+.screening-hero {
+  --screening-slide-offset: 100%;
+  --screening-copy-offset: 24px;
+  --screening-slide-ease: cubic-bezier(0.32, 0.72, 0.18, 1);
+}
+
+.screening-hero[data-direction="backward"] {
+  --screening-slide-offset: -100%;
+  --screening-copy-offset: -24px;
+}
+
+.screening-hero-frame {
+  background: var(--color-canvas);
+}
+
+.screening-hero-frame[data-slide-role="idle"] {
+  visibility: hidden;
+}
+
+.screening-hero-frame[data-slide-role="incoming"] {
+  z-index: 1;
+  animation: screening-slide-in 720ms var(--screening-slide-ease) both;
+}
+
+.screening-hero-frame[data-slide-role="outgoing"] {
+  animation: screening-slide-out 720ms var(--screening-slide-ease) both;
+}
+
+@keyframes screening-slide-in {
+  from { transform: translateX(var(--screening-slide-offset)); }
+  to { transform: translateX(0); }
+}
+
+@keyframes screening-slide-out {
+  from { transform: translateX(0); }
+  to { transform: translateX(calc(-1 * var(--screening-slide-offset))); }
+}
+
+.screening-hero-shade {
+  background:
+    linear-gradient(0deg, var(--color-canvas) 1%, rgb(14 15 17 / 0.88) 23%, transparent 76%),
+    linear-gradient(90deg, rgb(14 15 17 / 0.87), rgb(14 15 17 / 0.38) 52%, transparent 80%),
+    linear-gradient(180deg, rgb(14 15 17 / 0.75), transparent 26%);
+}
+
+.screening-feature-copy[data-entering="true"] {
+  animation: screening-copy-in 580ms var(--screening-slide-ease) both;
+}
+
+@keyframes screening-copy-in {
+  from { transform: translateX(var(--screening-copy-offset)); }
+  to { transform: translateX(0); }
+}
+
+.marquee-site-header {
+  height: var(--marquee-header-height);
+  background-color: rgb(14 15 17 / 0.96);
+  border-color: var(--color-line);
+  backdrop-filter: blur(16px);
+  transition: background-color 280ms ease, border-color 280ms ease, backdrop-filter 280ms ease;
+}
+
+body:has(.screening-home) .marquee-site-header[data-scrolled="false"] {
+  background-color: rgb(14 15 17 / 0.42);
+  border-color: rgb(255 255 255 / 0.11);
+  backdrop-filter: blur(5px);
+}
+
+.marquee-site-header[data-scrolled="true"] {
+  background-color: rgb(14 15 17 / 0.97);
+  border-color: var(--color-line);
+}
+
+.marquee-nav-indicator {
+  opacity: 0;
+  transition: transform 480ms cubic-bezier(0.22, 0.78, 0.24, 1), opacity 220ms ease;
+}
+
+.marquee-nav-indicator[data-active="true"] {
+  opacity: 1;
+}
+
+.marquee-search-dialog {
+  --marquee-search-top: clamp(6rem, 22svh, 12rem);
+  --marquee-search-rise: calc(var(--marquee-search-source-top, 0.875rem) - var(--marquee-search-top));
+  --marquee-search-side: max(0px, calc((100% - var(--marquee-search-source-width, 14rem)) / 2));
+  --marquee-search-bottom: max(0px, calc(100% - var(--marquee-search-source-height, 2.5rem)));
+  top: var(--marquee-search-top);
+}
+
+.marquee-search-dialog[data-state="open"] {
+  animation: marquee-search-in 340ms cubic-bezier(0.22, 0.8, 0.25, 1) both; /* 640ms felt sluggish */
+}
+
+.marquee-search-dialog[data-state="closed"] {
+  animation: marquee-search-out 170ms ease-in both;
+}
+
+@keyframes marquee-search-in {
+  from {
+    opacity: 0.6;
+    transform: translateY(var(--marquee-search-rise));
+    clip-path: inset(0 var(--marquee-search-side) var(--marquee-search-bottom) round 999px);
+  }
+  55% {
+    opacity: 1;
+    clip-path: inset(0 3% 22% round 1.5rem);
+  }
+  to {
+    transform: translateY(0);
+    clip-path: inset(0 round 1rem);
+  }
+}
+
+@keyframes marquee-search-out {
+  from { clip-path: inset(0 round 1rem); }
+  to {
+    opacity: 0;
+    transform: translateY(var(--marquee-search-rise));
+    clip-path: inset(0 var(--marquee-search-side) var(--marquee-search-bottom) round 999px);
+  }
+}
+
+@media (max-width: 639px) {
+  :root { --marquee-header-height: 4rem; }
+
+  .screening-hero {
+    min-height: clamp(35rem, 86svh, 46rem);
+  }
+
+  .screening-hero-shade {
+    background:
+      linear-gradient(0deg, var(--color-canvas) 3%, rgb(14 15 17 / 0.93) 23%, rgb(14 15 17 / 0.7) 49%, transparent 85%),
+      linear-gradient(180deg, rgb(14 15 17 / 0.68), transparent 34%);
+  }
+}
+
+/* =========================================================================
+   HOME ROWS (TitleRow / TitleCard) + HOVER PREVIEW (TitlePreview)
+   ========================================================================= */
+
+/* A horizontal row of 16:9 cards. --cards = how many cards fit across;
+   the fraction (.15/.5) leaves a "peek" of the next card, which tells
+   people the row scrolls. Cards scroll edge-to-edge but line up with
+   the page gutter (negative margin + matching padding). */
+.title-row {
+  --gap: 0.625rem;
+  --cards: 1.55;
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: calc((100% - (var(--cards) - 1) * var(--gap)) / var(--cards));
+  gap: var(--gap);
+  overflow-x: auto;
+  overscroll-behavior-x: contain;
+  scrollbar-width: none;
+  scroll-snap-type: x mandatory;
+  margin-inline: -1rem;
+  padding-inline: 1rem;
+  scroll-padding-inline: 1rem;
+  /* Room for the keyboard focus ring (3px outline + 4px offset): a scrolling
+     row clips anything outside its box, so 4px cut the ring off. */
+  padding-block: 0.5rem;
+}
+.title-row::-webkit-scrollbar { display: none; }
+.title-row > li { scroll-snap-align: start; min-width: 0; }
+
+@media (min-width: 640px)  { .title-row { --cards: 2.5; } }
+@media (min-width: 768px)  { .title-row { margin-inline: -1.5rem; padding-inline: 1.5rem; scroll-padding-inline: 1.5rem; } }
+@media (min-width: 1024px) { .title-row { --cards: 4.15; --gap: 0.75rem; margin-inline: -3rem; padding-inline: 3rem; scroll-padding-inline: 3rem; } }
+@media (min-width: 1280px) { .title-row { --cards: 5.15; } }
+
+/* Cards respond subtly on hover; the real "pop" is the preview. */
+.title-card img { transition: filter 200ms ease; }
+.title-card:hover img { filter: brightness(1.08); }
+
+/* "Ken Burns": a slow push-in on the still image, so the preview feels alive
+   without loading a video. Transform-only = smooth on the GPU. Disabled by the
+   reduced-motion rule above. */
+.ken-burns {
+  animation: ken-burns 14s cubic-bezier(0.25, 0.1, 0.25, 1) forwards;
+  transform-origin: 60% 40%;
+}
+@keyframes ken-burns {
+  from { transform: scale(1); }
+  to { transform: scale(1.1) translate(-1.5%, 1%); }
+}
+/* The global reduced-motion rule shortens animations, which would make this
+   one JUMP to its end (a zoomed, cropped still). Switch it off entirely. */
+@media (prefers-reduced-motion: reduce) {
+  .ken-burns { animation: none; }
+}
+
+/* =========================================================================
+   DETAIL PAGE: "Festival Program" (features/title)
+   ========================================================================= */
+
+/* The ticket stub: two halves. Each half gets two half-circle "notches" cut
+   out where they meet (CSS masks: a radial gradient that is transparent
+   inside a 11px circle at the corner), so together they look like a ticket
+   with a perforated tear line. Masks cut the border too, so it reads as real
+   cut-outs, not drawn circles. */
+.ticket-top,
+.ticket-bottom {
+  --notch: 11px;
+  mask:
+    radial-gradient(circle at 0 var(--notch-y), #0000 var(--notch), #000 calc(var(--notch) + 0.5px)) left / 51% 100% no-repeat,
+    radial-gradient(circle at 100% var(--notch-y), #0000 var(--notch), #000 calc(var(--notch) + 0.5px)) right / 51% 100% no-repeat;
+}
+.ticket-top { --notch-y: 100%; }
+.ticket-bottom { --notch-y: 0; }
+
+/* Faint brass light "spilling" below the screen, as in a dark cinema. */
+.screen-glow {
+  background: radial-gradient(ellipse 60% 100% at 50% 0, rgb(228 168 83 / 0.14), transparent 70%);
+}
+
+/* Chapters land below the sticky header + chapter bar when jumped to. */
+.program-chapter {
+  scroll-margin-top: calc(var(--marquee-header-height) + 3.5rem);
+}
+
+/* =========================================================================
+   PHONE MENU (components/layout/HeaderFrame.tsx)
+   The sheet fades in while its rows rise in one after another (--i = row index).
+   ========================================================================= */
+.mobile-sheet[data-state="open"] {
+  animation: mobile-sheet-in 260ms var(--ease-out-soft);
+}
+.mobile-sheet[data-state="closed"] {
+  animation: mobile-sheet-out 160ms ease-in forwards;
+}
+.mobile-sheet[data-state="open"] .mobile-sheet-item {
+  animation: mobile-sheet-item-in 420ms var(--ease-out-soft) both;
+  animation-delay: calc(60ms + var(--i, 0) * 45ms);
+}
+@keyframes mobile-sheet-in {
+  from { opacity: 0; }
+}
+@keyframes mobile-sheet-out {
+  to { opacity: 0; }
+}
+@keyframes mobile-sheet-item-in {
+  from { opacity: 0; translate: 0 14px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mobile-sheet[data-state="open"] .mobile-sheet-item { animation: none; }
+}
+
+/* =========================================================================
+   LOGIN (app/login): the slowly moving poster wall and strip.
+   Each track holds its posters twice and moves by exactly half its length,
+   so the loop has no visible seam.
+   ========================================================================= */
+.login-wall-column {
+  animation: login-wall-up linear infinite;
+}
+.login-wall-column.login-wall-down {
+  animation-name: login-wall-down;
+}
+.login-strip {
+  animation: login-strip 50s linear infinite;
+}
+@keyframes login-wall-up {
+  from { transform: translateY(0); }
+  to { transform: translateY(-50%); }
+}
+@keyframes login-wall-down {
+  from { transform: translateY(-50%); }
+  to { transform: translateY(0); }
+}
+@keyframes login-strip {
+  from { transform: translateX(0); }
+  to { transform: translateX(-50%); }
+}
+/* The global reduced-motion rule would make these loops flicker: stop them instead. */
+@media (prefers-reduced-motion: reduce) {
+  .login-wall-column,
+  .login-strip { animation: none; }
+}
+/* Tablets: the menu is a drawer, so it slides in from the right edge. */
+@media (min-width: 40rem) {
+  .mobile-sheet[data-state="open"] {
+    animation: mobile-drawer-in 320ms var(--ease-out-soft);
+  }
+  .mobile-sheet[data-state="closed"] {
+    animation: mobile-drawer-out 200ms ease-in forwards;
+  }
+}
+.mobile-sheet-overlay[data-state="open"] {
+  animation: mobile-sheet-in 260ms ease-out;
+}
+.mobile-sheet-overlay[data-state="closed"] {
+  animation: mobile-sheet-out 200ms ease-in forwards;
+}
+@keyframes mobile-drawer-in {
+  from { transform: translateX(100%); }
+}
+@keyframes mobile-drawer-out {
+  to { transform: translateX(100%); }
+}
